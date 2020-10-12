@@ -1,5 +1,6 @@
 #include "include/parser.h"
 #include "include/types.h"
+#include "include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -160,6 +161,17 @@ AST_T* parser_parse_int(parser_T* parser)
   return ast;
 }
 
+AST_T* parser_parse_string(parser_T* parser)
+{
+  char* value = mkstr(parser->token->value);
+  parser_eat(parser, TOKEN_STRING);
+
+  AST_T* ast = init_ast(AST_STRING);
+  ast->string_value = value;
+
+  return ast;
+}
+
 AST_T* parser_parse_expr(parser_T* parser)
 {
   switch (parser->token->type)
@@ -167,6 +179,7 @@ AST_T* parser_parse_expr(parser_T* parser)
     case TOKEN_ID: return parser_parse_id(parser);
     case TOKEN_LPAREN: return parser_parse_list(parser);
     case TOKEN_INT: return parser_parse_int(parser);
+    case TOKEN_STRING: return parser_parse_string(parser);
     default: { printf("[Parser]: Unexpected token `%s`\n", token_to_str(parser->token)); exit(1); };
   }
 }
