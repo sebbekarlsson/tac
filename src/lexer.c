@@ -1,5 +1,6 @@
 #include "include/lexer.h"
 #include "include/macros.h"
+#include "include/utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -98,7 +99,10 @@ token_T* lexer_parse_string(lexer_T* lexer)
   
   lexer_advance(lexer);
 
-  return init_token(value, TOKEN_STRING);
+  char* formatted = str_format(value);
+  free(value);
+
+  return init_token(formatted, TOKEN_STRING);
 }
 
 token_T* lexer_next_token(lexer_T* lexer)

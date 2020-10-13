@@ -24,7 +24,6 @@ AST_T* fptr_print(visitor_T* visitor, AST_T* node, list_T* list)
       sprintf(instr, "%d", first_arg->int_value);
     }
 
-
     char** chunks = str_to_hex_chunks(instr, &nr_chunks);
 
     char* strpush = calloc(1, sizeof(char));
