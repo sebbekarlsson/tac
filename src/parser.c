@@ -79,8 +79,11 @@ AST_T* parser_parse_id(parser_T* parser)
     else
     if (parser->token->type == TOKEN_LBRACKET)
     {
+      parser_eat(parser, TOKEN_LBRACKET);
       ast->type = AST_ACCESS;
-      ast->value = parser_parse_list(parser);
+      ast->int_value = atoi(parser->token->value);
+      parser_eat(parser, TOKEN_INT);
+      parser_eat(parser, TOKEN_RBRACKET);
     }
   }
 

@@ -13,11 +13,11 @@ typedef struct AST_STRUCT
     AST_CALL,
     AST_ASSIGNMENT,
     AST_DEFINITION_TYPE,
-    AST_VARIABLE,
+    AST_VARIABLE = 77,
     AST_STATEMENT,
     AST_ACCESS,
     AST_INT,
-    AST_STRING = 88,
+    AST_STRING,
     AST_NOOP,
   } type;
   
@@ -27,6 +27,7 @@ typedef struct AST_STRUCT
   struct AST_STRUCT* value;
   int int_value;
   int data_type;
+  int id;
   struct AST_STRUCT* (*fptr)(struct VISITOR_STRUCT* visitor, struct AST_STRUCT* node, list_T* list);
 } AST_T;
 

@@ -1,4 +1,5 @@
 main = (argc: int, argv: Array<string>):int => {
-  print("hello world, this is the tac language\n\n");
-  return(15);
+  print(argv[0]);
+  print("hello there\n");
+  return(argc);
 }

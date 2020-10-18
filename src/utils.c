@@ -30,26 +30,29 @@ char* str_to_hex(const char* instr)
   return hexstr;
 }
 
-char** str_to_hex_chunks(const char* instr, int* nr_chunks)
+list_T* str_to_hex_chunks(const char* instr)
 {
-  unsigned int len = strlen(instr);
-  unsigned int nrchunks = (len / 4) + 1;
-  int* nrptr = nr_chunks;
-  *nrptr = nrchunks;
+  list_T* list = init_list(sizeof(char*));
 
-  char** strlist = calloc(nrchunks * 5, sizeof(char*));
-
-  for (unsigned int i = 0; i < (len/4)+1; i++)
+  unsigned int i = 0;
+  char* tmp = calloc(1, sizeof(char));
+  while (instr[i] != '\0')
   {
-    char* chunkstr = mkstr(instr + ((i)*4));
-    chunkstr = realloc(chunkstr, 4);
-    chunkstr[4] = 0;
-    char* hexstr = str_to_hex(chunkstr);
+    tmp = realloc(tmp, (strlen(tmp) + 2) * sizeof(char));
+    strcat(tmp, (char[]){instr[i], 0});
 
-    strlist[i] = hexstr;
+    if ((i > 0 && (i-1) % 4 == 0) || instr[i] == '\n' || instr[i] == '\t')
+    {
+      char* hexstr = str_to_hex(tmp);
+      free(tmp);
+      list_push(list, hexstr);
+      tmp = calloc(1, sizeof(char));
+    }
+    
+    i += 1;
   }
 
-  return strlist;
+  return list;
 }
 
 char* mkstr(const char* str)

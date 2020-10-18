@@ -84,7 +84,7 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list)
 {
   AST_T* func = init_ast(AST_FUNCTION);
   func->children = init_list(sizeof(struct AST_STRUCT*));
-  func->value = visitor_visit(visitor, node->value, list);
+  func->value = visitor_visit(visitor, node->value, node->children);
 
   for (unsigned int i = 0; i < node->children->size; i++)
     list_push(func->children, (AST_T*) visitor_visit(visitor, (AST_T*) node->children->items[i], list));
@@ -96,11 +96,18 @@ AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list)
 {
   AST_T* var = var_lookup(visitor->object->children, node->name);
 
+  list_T* new_args = init_list(sizeof(struct AST_STRUCT*));
+
+  for (unsigned int i = 0; i < node->value->children->size; i++)
+  {
+    list_push(new_args, visitor_visit(visitor, (AST_T*)node->value->children->items[i], list));
+  }
+
   if (var)
   {
     if (var->fptr)
     {
-      AST_T* x = visitor_visit(visitor, var->fptr(visitor, var, node->value->children), list);
+      AST_T* x = visitor_visit(visitor, var->fptr(visitor, var, new_args), list);
       return x;
     }
   }
@@ -120,5 +127,17 @@ AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, list_T* list)
 
 AST_T* visitor_visit_access(visitor_T* visitor, AST_T* node, list_T* list)
 {
+  int id = 0;
+  for (unsigned int i = 0; i < list->size; i++)
+  {
+    if (strcmp(((AST_T*)list->items[i])->name, node->name) == 0)
+    {
+      id = i;
+      break;
+    }
+  }
+
+  node->id = id;
+
   return node;
 }
