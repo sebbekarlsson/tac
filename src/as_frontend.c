@@ -3,8 +3,13 @@
 #include <string.h>
 #include <stdio.h>
 
-const char STRLEN_TEMPLATE[] =
-
+const char BOOTSTRAP_TEMPLATE[] =
+"return_statement:\n"
+"popl \%eax\n"
+"movl \%ebp, \%esp\n"
+"popl \%ebp\n\n"
+"ret\n"
+"\n"
 " .type strlen, @function\n"
 " strlen:\n"
 "   pushl %ebp\n"
@@ -110,33 +115,28 @@ char* as_f_call(AST_T* ast, list_T* list)
 {
   char* s = calloc(1, sizeof(char));
 
-  if (strcmp(ast->name, "return") == 0)
-  {
-    AST_T* first_arg = (AST_T*) ast->value->children->size ? ast->value->children->items[0] : (void*) 0;
-    char* var_s = calloc(3, sizeof(char));
-    var_s[0] = '$';
-    var_s[1] = '0';
-    var_s[2] = '\0';
-    
-    if (first_arg)
-    {
-      char* as_var_s = as_f(first_arg, list);
-      var_s = realloc(var_s, (strlen(as_var_s) + 1) * sizeof(char));
-      strcpy(var_s, as_var_s);
-      free(as_var_s);
-    }
+  const char* template = "call %s\n";
+  char* ret_s = calloc(strlen(template) + 128, sizeof(char));
+  sprintf(ret_s, template, ast->name);
+  s = realloc(s, (strlen(ret_s) + 1) * sizeof(char));
+  strcat(s, ret_s);
+  free(ret_s);
 
-    const char* template = 
-                           "%s\n"
-                           "popl %%eax\n"
-                           "movl %%ebp, %%esp\n"
-                           "popl %%ebp\n\n"
-                           "ret\n";
-    char* ret_s = calloc(strlen(template) + 128, sizeof(char));
-    sprintf(ret_s, template, var_s);
-    s = realloc(s, (strlen(ret_s) + 1) * sizeof(char));
-    strcat(s, ret_s);
-  }
+  return s;
+}
+
+char* as_f_statement_return(AST_T* ast, list_T* list)
+{
+  char* s = calloc(1, sizeof(char));
+
+  const char* template = "%s\n"
+                         "jmp return_statement\n";
+  char* value_s = as_f(ast->value, list);
+  char* ret_s = calloc(strlen(template) + strlen(value_s) + 128, sizeof(char));
+  sprintf(ret_s, template, value_s);
+  s = realloc(s, (strlen(ret_s) + 1) * sizeof(char));
+  strcat(s, ret_s);
+  free(ret_s);
 
   return s;
 }
@@ -172,8 +172,8 @@ char* as_f_root(AST_T* ast, list_T* list)
   value = (char*) realloc(value, (strlen(value) + strlen(next_value) + 1) * sizeof(char));
   strcat(value, next_value);
 
-  value = realloc(value, (strlen(value) + strlen(STRLEN_TEMPLATE) + 1) * sizeof(char));
-  strcat(value, STRLEN_TEMPLATE);
+  value = realloc(value, (strlen(value) + strlen(BOOTSTRAP_TEMPLATE) + 1) * sizeof(char));
+  strcat(value, BOOTSTRAP_TEMPLATE);
 
   return value;
 }
@@ -206,6 +206,7 @@ char* as_f(AST_T* ast, list_T* list)
     case AST_INT: next_value = as_f_int(ast, list); break;
     case AST_STRING: next_value = as_f_string(ast, list); break;
     case AST_ACCESS: next_value = as_f_access(ast, list); break;
+    case AST_STATEMENT_RETURN: next_value = as_f_statement_return(ast, list); break;
     default: { printf("[As Frontend]: No frontend for AST of type `%d`\n", ast->type); exit(1); } break;
   }
 

@@ -114,12 +114,15 @@ AST_T* parser_parse_list(parser_T* parser)
 
   AST_T* ast = init_ast(AST_COMPOUND);
   
-  list_push(ast->children, parser_parse_expr(parser));
-
-  while (parser->token->type == TOKEN_COMMA)
+  if (parser->token->type != (is_bracket ? TOKEN_RBRACKET : TOKEN_RPAREN))
   {
-    parser_eat(parser, TOKEN_COMMA);
     list_push(ast->children, parser_parse_expr(parser));
+
+    while (parser->token->type == TOKEN_COMMA)
+    {
+      parser_eat(parser, TOKEN_COMMA);
+      list_push(ast->children, parser_parse_expr(parser));
+    }
   }
  
   parser_eat(parser, is_bracket ? TOKEN_RBRACKET : TOKEN_RPAREN);
@@ -187,6 +190,16 @@ AST_T* parser_parse_expr(parser_T* parser)
   }
 }
 
+AST_T* parser_parse_statement(parser_T* parser)
+{
+  // we only have return statements right now
+  AST_T* ast = init_ast(AST_STATEMENT_RETURN);
+  parser_eat(parser, TOKEN_STATEMENT);
+  ast->value = parser_parse_expr(parser);
+
+  return ast;
+}
+
 AST_T* parser_parse_compound(parser_T* parser)
 {
   unsigned int should_close = 0;
@@ -201,7 +214,10 @@ AST_T* parser_parse_compound(parser_T* parser)
 
   while (parser->token->type != TOKEN_EOF && parser->token->type != TOKEN_RBRACE)
   {
-    list_push(compound->children, parser_parse_expr(parser));
+    if (parser->token->type == TOKEN_STATEMENT)
+      list_push(compound->children, parser_parse_statement(parser));
+    else
+      list_push(compound->children, parser_parse_expr(parser));
 
     if (parser->token->type == TOKEN_SEMI)
       parser_eat(parser, TOKEN_SEMI);

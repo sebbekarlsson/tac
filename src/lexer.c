@@ -57,6 +57,7 @@ void lexer_skip_whitespace(lexer_T* lexer)
 
 token_T* lexer_parse_id(lexer_T* lexer)
 {
+  int token_type = TOKEN_ID;
 
   char* value = calloc(1, sizeof(char));
 
@@ -67,7 +68,10 @@ token_T* lexer_parse_id(lexer_T* lexer)
     lexer_advance(lexer);
   }
 
-  return init_token(value, TOKEN_ID);
+  if (strcmp(value, "return") == 0)
+    token_type = TOKEN_STATEMENT;
+
+  return init_token(value, token_type);
 }
 
 token_T* lexer_parse_number(lexer_T* lexer)

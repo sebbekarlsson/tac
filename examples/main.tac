@@ -1,3 +1,9 @@
+hello = ():int => {
+  print("Hello!\n");
+  return 1;
+};
+
 main = (argc: int, argv: Array<string>):int => {
-  return(1);
-}
+  hello();
+  return 16;
+};
