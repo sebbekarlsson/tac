@@ -21,7 +21,7 @@ char* str_to_hex(const char* instr)
   for (unsigned int i = 0; i < len+1; i++)
   {
     char* newstr = calloc(4, sizeof(char));
-    sprintf(newstr, "%x", instr[len-i]);
+    sprintf(newstr, "%x", instr[(len-i)]);
     hexstr = realloc(hexstr, (strlen(hexstr) + strlen(newstr) + 1) * sizeof(char));
     strcat(hexstr, newstr);
     free(newstr);
@@ -36,12 +36,13 @@ list_T* str_to_hex_chunks(const char* instr)
 
   unsigned int i = 0;
   char* tmp = calloc(1, sizeof(char));
+  unsigned int len = strlen(instr);
   while (instr[i] != '\0')
   {
     tmp = realloc(tmp, (strlen(tmp) + 2) * sizeof(char));
-    strcat(tmp, (char[]){instr[i], 0});
+    strcat(tmp, (char[]){ instr[i], 0 });
 
-    if ((i > 0 && (i-1) % 4 == 0) || instr[i] == '\n' || instr[i] == '\t')
+    if (((i > 0 && (strlen(tmp) % 4 == 0)) || i >= len-1 ) || instr[i] == '\n' || instr[i] == '\t')
     {
       char* hexstr = str_to_hex(tmp);
       free(tmp);
