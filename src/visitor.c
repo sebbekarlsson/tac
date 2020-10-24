@@ -108,8 +108,7 @@ AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list)
   {
     if (var->fptr)
     {
-      AST_T* x = visitor_visit(visitor, var->fptr(visitor, var, new_args), list);
-      return x;
+      return var->fptr(visitor, node, new_args);
     }
   }
 
