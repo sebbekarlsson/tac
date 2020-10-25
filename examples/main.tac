@@ -1,4 +1,10 @@
+hello = (x: string, y: string) => {
+  print(x);
+  print(y);
+  return 1;
+};
+
 main = (argc: int, argv: Array<string>):int => {
-  print("Hello world!\n");
+  hello("a", "b");
   return 0;
 };
