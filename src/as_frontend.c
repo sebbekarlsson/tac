@@ -132,13 +132,62 @@ char* as_f_call(AST_T* ast, list_T* list)
   char* s = calloc(1, sizeof(char));
 
   unsigned int i = 0;
+  unsigned int next_push_counter = 0;
+  int* int_list = calloc(0, sizeof(int));
+  size_t int_list_size = 0;
+
+  const char* prefix_template = "subl $%d, %%esp\n";
+  char* final_prefix = calloc(0, sizeof(char));
+  unsigned int has_final_prefix = 0;
+  
+
   for (; i < ast->value->children->size; i++)
   {
     AST_T* arg = (AST_T*)ast->value->children->items[i];
+   
+    if (arg->type == AST_STRING) {
+      next_push_counter += 4;
+
+      char* prefix = calloc(strlen(prefix_template) + 128, sizeof(char));
+      sprintf(prefix, prefix_template, 4);
+      final_prefix = realloc(final_prefix, (strlen(final_prefix) + strlen(prefix) + 1) * sizeof(char));
+      strcat(final_prefix, prefix);
+      has_final_prefix = 1;
+      free(prefix);
+    }
+
     char* arg_s = as_f(arg, list);
+
     s = realloc(s, (strlen(s) + strlen(arg_s) + 1) * sizeof(char));
     strcat(s, arg_s);
+
+    if (arg->type == AST_STRING)
+    { 
+      const char* suffix_template = "movl %%esp, -%d(%%ebp)\n"
+                                    "# end of %s\n";
+      char* suffix = calloc(strlen(suffix_template) + 128, sizeof(char));
+      sprintf(suffix, suffix_template, next_push_counter, arg->string_value);
+      s = realloc(s, (strlen(s) + strlen(suffix) + 1) * sizeof(char));
+      strcat(s, suffix);
+      
+      int_list_size += 1;
+      int_list = realloc(int_list, int_list_size * sizeof(int));
+      int_list[int_list_size-1] = next_push_counter;
+    }
   }
+
+  for (unsigned int i = 0; i < int_list_size; i++)
+  {
+    const char* push_template = "pushl -%d(%%ebp)\n";
+    char* push = calloc(strlen(push_template) * 128, sizeof(char));
+    sprintf(push, push_template, int_list[i]);
+    s = realloc(s, (strlen(s) + strlen(push) + 1) * sizeof(char));
+    strcat(s, push);
+    free(push);
+  }
+
+  if (int_list && int_list_size)
+    free(int_list);
 
   int addl_size = i * 4;
 
@@ -150,7 +199,16 @@ char* as_f_call(AST_T* ast, list_T* list)
   strcat(s, ret_s);
   free(ret_s);
 
-  return s;
+  char* final_str = calloc(strlen(s) + strlen(final_prefix) + 1, sizeof(char));
+  strcat(final_str, final_prefix);
+  strcat(final_str, s);
+
+  free(s);
+
+  if (has_final_prefix)
+    free(final_prefix);
+
+  return final_str;
 }
 
 char* as_f_statement_return(AST_T* ast, list_T* list)
@@ -181,28 +239,42 @@ char* as_f_int(AST_T* ast, list_T* list)
 char* as_f_string(AST_T* ast, list_T* list)
 {
   list_T* chunks = str_to_hex_chunks(ast->string_value);
-  unsigned int nr_bytes = (chunks->size * 4);
+  unsigned int nr_bytes = ((chunks->size + 1) * 4);
+  unsigned int bytes_counter = nr_bytes - 4;
+  
+  const char* subl_template = "subl $%d, %%esp\n";
+  char* sub = calloc(strlen(subl_template) + 128, sizeof(char));
+  sprintf(sub, subl_template, nr_bytes);
+  
+  char* strpush = calloc(strlen(sub) + 1, sizeof(char));
+  strcat(strpush, sub);
 
-  const char* zero_push = "pushl $0x0\n";
-  char* strpush = calloc(strlen(zero_push) + 1, sizeof(char));
-  strcpy(strpush, zero_push);
-  const char* pushtemplate = "pushl $0x%s\n";
+  const char* zero_push_template = "movl $0x0, %d(%%esp)\n";
+  char* zero_push = calloc(strlen(zero_push_template) + 128, sizeof(char));
+  sprintf(zero_push, zero_push_template, bytes_counter);
+  strpush = realloc(strpush, (strlen(zero_push) + strlen(strpush) + 1) * sizeof(char));
+  strcat(strpush, zero_push);
+  
+  bytes_counter -= 4;
+
+  const char* pushtemplate = "movl $0x%s, %d(%%esp)\n";
   
   for (unsigned int i = 0; i < chunks->size; i++)
   {
     char* pushhex = (char*) chunks->items[(chunks->size - i)-1];
     char* push = calloc(strlen(pushhex) + strlen(pushtemplate) + 1, sizeof(char));
-    sprintf(push, pushtemplate, pushhex);
+    sprintf(push, pushtemplate, pushhex, bytes_counter);
     strpush = realloc(strpush, (strlen(strpush) + strlen(push) + 1) * sizeof(char));
     strcat(strpush, push);
     free(pushhex);
     free(push);
+    bytes_counter -= 4;
   }
 
-  const char* finalpushstr = "pushl \%esp\n";
+  /*const char* finalpushstr = "pushl \%esp\n";
 
   strpush = realloc(strpush, (strlen(strpush) + strlen(finalpushstr) + 1) * sizeof(char));
-  strcat(strpush, finalpushstr);
+  strcat(strpush, finalpushstr);*/
 
   /*const char* pushsize_template = "pushl $%d\n";
   char* push_size_str = calloc(strlen(pushsize_template) + 128, sizeof(char));

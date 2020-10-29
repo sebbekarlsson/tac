@@ -135,9 +135,9 @@ AST_T* visitor_visit_statement_return(visitor_T* visitor, AST_T* node, list_T* l
 AST_T* visitor_visit_access(visitor_T* visitor, AST_T* node, list_T* list)
 {
   int id = 0;
-  for (unsigned int i = 0; i < list->size; i++)
+  for (unsigned int i = list->size; i > 0; i--)
   {
-    if (strcmp(((AST_T*)list->items[i])->name, node->name) == 0)
+    if (strcmp(((AST_T*)list->items[i-1])->name, node->name) == 0)
     {
       id = i;
       break;
