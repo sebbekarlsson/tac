@@ -1,6 +1,7 @@
 #ifndef TAC_AST_H
 #define TAC_AST_H
 #include "list.h"
+#include "stack_frame.h"
 
 struct VISITOR_STRUCT;
 
@@ -28,7 +29,10 @@ typedef struct AST_STRUCT
   int int_value;
   int data_type;
   int id;
+  unsigned int stack_index;
+  int multiplier;
   struct AST_STRUCT* (*fptr)(struct VISITOR_STRUCT* visitor, struct AST_STRUCT* node, list_T* list);
+  stack_frame_T* stack_frame;
 } AST_T;
 
 AST_T* init_ast(int type);

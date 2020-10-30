@@ -1,4 +1,5 @@
 #include "include/list.h"
+#include <string.h>
 
 
 list_T* init_list(size_t item_size)
@@ -21,4 +22,13 @@ void list_push(list_T* list, void* item)
     list->items = realloc(list->items, (list->size * list->item_size));
 
   list->items[list->size-1] = item;
+}
+
+int list_indexof_str(list_T* list, char* item)
+{
+  for (unsigned int i = 0; i < list->size; i++)
+    if (strcmp((char*)list->items[i], item) == 0)
+      return (int) i;
+
+  return -1; 
 }

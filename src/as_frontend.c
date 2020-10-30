@@ -66,6 +66,17 @@ static AST_T* var_lookup(list_T* list, const char* name)
 char* as_f_compound(AST_T* ast, list_T* list) {
   char* value = calloc(1, sizeof(char));
 
+  if (ast->stack_frame->stack->size)
+  {
+    const char* subl_template = "subl $%d, %%esp\n";
+    char* subl = calloc(strlen(subl_template) + 128, sizeof(char));
+    sprintf(subl, subl_template, (4 + ast->stack_frame->stack->size) * 4);
+   
+    value = realloc(value, (strlen(value) + strlen(subl) + 1) * sizeof(char));
+    strcat(value, subl);
+    free(subl);
+  }
+
   for (unsigned int i = 0; i < ast->children->size; i++)
   {
     AST_T* child_ast = (AST_T*) ast->children->items[i];
@@ -77,20 +88,25 @@ char* as_f_compound(AST_T* ast, list_T* list) {
   return value;
 }
 
-char* as_f_assignment(AST_T* ast, list_T* list)
+char* as_f_function(AST_T* ast, list_T* list)
 {
-  char* s = calloc(1, sizeof(char));
+  AST_T* parent = list->size ? (AST_T*)list->items[list->size-1] : (AST_T*)0;
+  if (!parent) return 0;
 
-  if (ast->value->type == AST_FUNCTION)
-  {
-    const char* template = ".globl %s\n"
+
+  list->items[list->size-1] = 0;
+  list->size -= 1;
+
+  char* name = parent->name;
+
+  const char* template = ".globl %s\n"
                            "%s:\n"
                            "pushl %%ebp\n"
                            "movl %%esp, %%ebp\n";
-    s = realloc(s, (strlen(template) + (strlen(ast->name)*2) + 1) * sizeof(char));
-    sprintf(s, template, ast->name, ast->name);
+    char* s = calloc((strlen(template) + (strlen(name)*2) + 1), sizeof(char));
+    sprintf(s, template, name, name);
 
-    AST_T* as_val = ast->value;
+    AST_T* as_val = ast;
 
     for (unsigned int i = 0; i < as_val->children->size; i++)
     {
@@ -105,24 +121,53 @@ char* as_f_assignment(AST_T* ast, list_T* list)
 
     s = realloc(s, (strlen(s) + strlen(as_val_val) + 1) * sizeof(char));
     strcat(s, as_val_val);
+    free(as_val_val);
+
+    return s;
+}
+
+char* as_f_assignment(AST_T* ast, list_T* list)
+{
+  int id = (ast->stack_index*4);
+
+  char* s = calloc(1, sizeof(char));
+
+  /*const char* subl_template = "subl $4, %esp\n";
+  char* subl = calloc(strlen(subl_template) + 1, sizeof(char));
+  strcpy(subl, subl_template);
+ 
+  s = realloc(s, (strlen(s) + strlen(subl) + 1) * sizeof(char));
+  strcat(s, subl);
+  free(subl);*/
+
+  if (ast->value->type == AST_FUNCTION)
+    list_push(list, ast);
+
+  char* value_as = as_f(ast->value, list);
+
+  if (value_as)
+  {
+    s = realloc(s, (strlen(s) + strlen(value_as) + 1) * sizeof(char));
+    strcat(s, value_as);
+    free(value_as);
   }
+  
+  const char* mo_template = "movl %%esp, -%d(%%ebp)\n";
+  char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
+  sprintf(mo, mo_template, id);
+  s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
+  strcat(s, mo);
 
   return s;
 }
+
 char* as_f_variable(AST_T* ast, list_T* list) {
   char* s = calloc(1, sizeof(char));
 
-  AST_T* var = var_lookup(list, ast->name);
-
-  if (!var)
-  {
-    printf("[As Frontend]: `%s` is not defined.\n", var->name);
-    exit(1);
-  }
-
-  const char* template = "pushl %d(%%esp)\n";
+  const char* template = "pushl %d(%%ebp)\n";
+  int id = (4 + (ast->stack_index*4)) * ast->multiplier;
   s = realloc(s, (strlen(template) + 8) * sizeof(char));
-  sprintf(s, template, 4 + var->int_value);
+  sprintf(s, template, id);
 
   return s;
 }
@@ -342,6 +387,7 @@ char* as_f(AST_T* ast, list_T* list)
     case AST_STRING: next_value = as_f_string(ast, list); break;
     case AST_ACCESS: next_value = as_f_access(ast, list); break;
     case AST_STATEMENT_RETURN: next_value = as_f_statement_return(ast, list); break;
+    case AST_FUNCTION: next_value = as_f_function(ast, list); break;
     default: { printf("[As Frontend]: No frontend for AST of type `%d`\n", ast->type); exit(1); } break;
   }
 

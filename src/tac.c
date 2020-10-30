@@ -40,7 +40,7 @@ void tac_compile(char* src)
   AST_T* root = parser_parse(parser);
 
   visitor_T* visitor = init_visitor();
-  AST_T* optimized_root = visitor_visit(visitor, root, init_list(sizeof(struct AST_STRUCT*)));
+  AST_T* optimized_root = visitor_visit(visitor, root, init_list(sizeof(struct AST_STRUCT*)), init_stack_frame());
   
   char* s = as_f_root(optimized_root, init_list(sizeof(struct AST_STRUCT*)));
 

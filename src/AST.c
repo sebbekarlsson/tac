@@ -10,5 +10,8 @@ AST_T* init_ast(int type)
   if (type == AST_COMPOUND)
     ast->children = init_list(sizeof(struct AST_STRUCT*));
 
+  ast->stack_frame = (void*)0;
+  ast->multiplier = 1;
+
   return ast;
 }

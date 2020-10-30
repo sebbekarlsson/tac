@@ -12,4 +12,6 @@ typedef struct LIST_STRUCT
 list_T* init_list(size_t item_size);
 
 void list_push(list_T* list, void* item);
+
+int list_indexof_str(list_T* list, char* item);
 #endif
