@@ -23,6 +23,8 @@ token_T* lexer_advance_current(lexer_T* lexer, int type);
 
 void lexer_skip_whitespace(lexer_T* lexer);
 
+void lexer_skip_comment(lexer_T* lexer);
+
 token_T* lexer_parse_id(lexer_T* lexer);
 
 token_T* lexer_parse_number(lexer_T* lexer);

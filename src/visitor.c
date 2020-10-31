@@ -1,5 +1,6 @@
 #include "include/visitor.h"
 #include "include/builtins.h"
+#include "include/compiler_errors.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -9,7 +10,7 @@ static AST_T* var_lookup(list_T* list, const char* name)
   {
     AST_T* child_ast = (AST_T*) list->items[i];
 
-    if (child_ast->type != AST_VARIABLE || !child_ast->name)
+    if ((child_ast->type != AST_VARIABLE && child_ast->type != AST_FUNCTION) || !child_ast->name)
       continue;
 
     if (strcmp(child_ast->name, name) == 0)
@@ -53,9 +54,11 @@ AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node, list_T* list, sta
   AST_T* compound = init_ast(AST_COMPOUND);
   compound->stack_frame = stack_frame;
 
+  list_T* new_list = init_list(sizeof(struct AST_STRUCT*));
+
   for (unsigned int i = 0; i < node->children->size; i++)
   {
-    AST_T* x = visitor_visit(visitor, (AST_T*) node->children->items[i], list, stack_frame);
+    AST_T* x = visitor_visit(visitor, (AST_T*) node->children->items[i], new_list, stack_frame);
     list_push(compound->children, x);
   }
 
@@ -71,6 +74,10 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
     new_var->value = visitor_visit(visitor, node->value, list, stack_frame);
 
   list_push(list, new_var);
+
+  if (new_var->value)
+  if (new_var->value->type == AST_FUNCTION)
+    list_push(visitor->object->children, new_var->value);
   
   list_push(stack_frame->stack, new_var->name);
 
@@ -81,25 +88,22 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
-  unsigned int i = 0;
-  for (; i < list->size; i++)
+  unsigned int is_positive = 1;
+  for (unsigned int i = 0; i < list->size; i++)
   {
-    AST_T* in_arg = (AST_T*)list->items[i];
-    
-    if (in_arg->type != AST_VARIABLE)
+    AST_T* in_arg = (AST_T*) list->items[i];
+    if (!in_arg->name)
       continue;
 
     if (strcmp(node->name, in_arg->name) == 0)
     {
-      i = i + 1;
+      is_positive = 0;
       break;
     }
   }
 
-  node->multiplier = list_indexof_str(stack_frame->stack, node->name) == -1 ? 1 : -1;
-
-  int stack_index = list_indexof_str(stack_frame->stack, node->name) + 1 + (node->multiplier == -1 ? 0 : 1);
-  node->stack_index = (int)stack_index;
+  int stack_index = 2 + list_indexof_str(stack_frame->stack, node->name);
+  node->stack_index = is_positive ? (stack_index) : -stack_index;
 
   return node;
 }
@@ -107,6 +111,7 @@ AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, list_T* list, sta
 AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
   AST_T* func = init_ast(AST_FUNCTION);
+  func->name = node->name;
   func->children = init_list(sizeof(struct AST_STRUCT*));
 
   stack_frame_T* new_stack_frame = init_stack_frame();
@@ -114,7 +119,7 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, sta
   for (unsigned int i = 0; i < node->children->size; i++)
     list_push(func->children, (AST_T*) visitor_visit(visitor, (AST_T*) node->children->items[i], list, new_stack_frame));
 
-  func->value = visitor_visit(visitor, node->value, node->children, new_stack_frame);
+  func->value = visitor_visit(visitor, node->value, func->children, new_stack_frame);
 
   return func;
 }
@@ -126,16 +131,14 @@ AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list, stack_f
   list_T* new_args = init_list(sizeof(struct AST_STRUCT*));
 
   for (unsigned int i = 0; i < node->value->children->size; i++)
-  {
     list_push(new_args, visitor_visit(visitor, (AST_T*)node->value->children->items[i], list, stack_frame));
-  }
 
   if (var)
   {
     if (var->fptr)
-    {
       return var->fptr(visitor, node, new_args);
-    }
+
+    assert_call_matches_signature(node, var); 
   }
 
   return node;

@@ -1,12 +1,19 @@
-hello = (x: string, y:string) => {
+hello = (x: string, y:string, z:string) => {
   print(x);
+  print(y);
+  print(z);
   return 0;
 };
 
-
+/*
+* main method
+*/
 main = (argc: int, argv: Array<string>):int => {
-  abc:string = "hello world this is the tac language and this is a very long string\n";
-  xyz:string = "this is xyz\n";
-  hello(xyz);
+  foo:string = "the first string\n";
+  bar:string = "the second string\n";
+  far:string = "the third string\n";
+  
+  // print("hello");
+
   return 0;
 };

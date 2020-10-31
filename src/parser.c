@@ -83,9 +83,18 @@ AST_T* parser_parse_id(parser_T* parser)
     parser_eat(parser, TOKEN_EQUALS);
     ast->type = AST_ASSIGNMENT;
     ast->name = value;
-    ast->value = parser_parse_expr(parser);
+
+    if (parser->token->type == TOKEN_LPAREN)
+    {
+      ast->value = parser_parse_list(parser);
+    }
+    else
+    {
+      ast->value = parser_parse_expr(parser);
+      return ast;
+    }
+    
     ast->value->name = mkstr(ast->name);
-    return ast;
   }
 
   return ast;
@@ -154,8 +163,8 @@ AST_T* parser_parse_list(parser_T* parser)
     ast->value = parser_parse_compound(parser);
 
     // TODO: implement this
-    //for (unsigned int i = 0; i < ast->children->size; i++)
-    //  ((AST_T*)ast->children->items[i])->type = AST_ASSIGNMENT;
+    for (unsigned int i = 0; i < ast->children->size; i++)
+      ((AST_T*)ast->children->items[i])->type = AST_ASSIGNMENT;
   }
 
   return ast;

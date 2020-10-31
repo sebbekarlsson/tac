@@ -70,7 +70,7 @@ char* as_f_compound(AST_T* ast, list_T* list) {
   {
     const char* subl_template = "subl $%d, %%esp\n";
     char* subl = calloc(strlen(subl_template) + 128, sizeof(char));
-    sprintf(subl, subl_template, (4 + ast->stack_frame->stack->size) * 4);
+    sprintf(subl, subl_template, (ast->stack_frame->stack->size) * 4);
    
     value = realloc(value, (strlen(value) + strlen(subl) + 1) * sizeof(char));
     strcat(value, subl);
@@ -164,8 +164,8 @@ char* as_f_assignment(AST_T* ast, list_T* list)
 char* as_f_variable(AST_T* ast, list_T* list) {
   char* s = calloc(1, sizeof(char));
 
-  const char* template = "pushl %d(%%ebp)\n";
-  int id = (4 + (ast->stack_index*4)) * ast->multiplier;
+  const char* template = "pushl %d(%%ebp) #happening\n";
+  int id = (ast->stack_index*4);
   s = realloc(s, (strlen(template) + 8) * sizeof(char));
   sprintf(s, template, id);
 
@@ -176,7 +176,6 @@ char* as_f_call(AST_T* ast, list_T* list)
 {
   char* s = calloc(1, sizeof(char));
 
-  unsigned int i = 0;
   unsigned int next_push_counter = 0;
   int* int_list = calloc(0, sizeof(int));
   size_t int_list_size = 0;
@@ -186,9 +185,10 @@ char* as_f_call(AST_T* ast, list_T* list)
   unsigned int has_final_prefix = 0;
   
 
-  for (; i < ast->value->children->size; i++)
+  unsigned int i = ast->value->children->size;
+  for (; i > 0; i--)
   {
-    AST_T* arg = (AST_T*)ast->value->children->items[i];
+    AST_T* arg = (AST_T*)ast->value->children->items[i-1];
    
     if (arg->type == AST_STRING) {
       next_push_counter += 4;

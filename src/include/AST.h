@@ -29,7 +29,7 @@ typedef struct AST_STRUCT
   int int_value;
   int data_type;
   int id;
-  unsigned int stack_index;
+  int stack_index;
   int multiplier;
   struct AST_STRUCT* (*fptr)(struct VISITOR_STRUCT* visitor, struct AST_STRUCT* node, list_T* list);
   stack_frame_T* stack_frame;
