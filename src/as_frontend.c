@@ -47,13 +47,8 @@ const char BOOTSTRAP_TEMPLATE[] =
 "\n"
 "printi_end:\n"
 "  pushl %esp\n"
-"  call strlen\n"
+"  call print\n"
 "  addl $4, %esp\n"
-"  movl %esp, %ecx\n"
-"  movl %eax, %edx\n"
-"  movl $4, %eax\n"
-"  movl $1, %ebx\n"
-"  int $0x80\n"
 "\n"
 "  movl %ebp, %esp\n"
 "  popl %ebp\n"
@@ -191,11 +186,23 @@ char* as_f_assignment(AST_T* ast, list_T* list)
     free(value_as);
   }
   
-  const char* mo_template = "movl %%esp, -%d(%%ebp)\n";
-  char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-  sprintf(mo, mo_template, id);
-  s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
-  strcat(s, mo);
+  if (ast->dtype == DATA_TYPE_INT)
+  {
+    const char* mo_template = "movl $-%d, %%edi\n"
+                              "movb %%cl, (%%esp, %%edi, 1)\n";
+    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
+    sprintf(mo, mo_template, id);
+    s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
+    strcat(s, mo); 
+  }
+  else
+  { 
+    const char* mo_template = "movl %%esp, -%d(%%ebp)\n";
+    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
+    sprintf(mo, mo_template, id);
+    s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
+    strcat(s, mo);
+  }
 
   return s;
 }
@@ -313,7 +320,8 @@ char* as_f_statement_return(AST_T* ast, list_T* list)
 
 char* as_f_int(AST_T* ast, list_T* list)
 {
-  const char* template = "pushl $%d\n";
+  const char* template = "pushl $%d\n"
+                         "movb (%%esp), %%cl\n";
   char* s = calloc(strlen(template) + 128, sizeof(char));
   sprintf(s, template, ast->int_value);
 

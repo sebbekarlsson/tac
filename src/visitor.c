@@ -69,6 +69,7 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
 {
   AST_T* new_var = init_ast(AST_ASSIGNMENT);
   new_var->name = node->name;
+  new_var->dtype = node->dtype;
 
   if (node->value)
     new_var->value = visitor_visit(visitor, node->value, list, stack_frame);
@@ -112,6 +113,7 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, sta
 {
   AST_T* func = init_ast(AST_FUNCTION);
   func->name = node->name;
+  func->dtype = node->dtype;
   func->children = init_list(sizeof(struct AST_STRUCT*));
 
   stack_frame_T* new_stack_frame = init_stack_frame();

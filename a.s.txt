@@ -12,38 +12,12 @@ subl $4, %esp
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $8, %esp
-subl $4, %esp
 subl $12, %esp
-movl $0x0, 8(%esp)
-movl $0x0a6f, 4(%esp)
-movl $0x06c6c6568, 0(%esp)
-movl %esp, -4(%ebp)
-# end of hello
-
-pushl -4(%ebp)
-call print
-addl $0, %esp
-subl $4, %esp
-subl $44, %esp
-movl $0x0, 40(%esp)
-movl $0x0a646c, 36(%esp)
-movl $0x0726f7720, 32(%esp)
-movl $0x06f6c6c65, 28(%esp)
-movl $0x068202c67, 24(%esp)
-movl $0x06e697274, 20(%esp)
-movl $0x073206f6c, 16(%esp)
-movl $0x06c656820, 12(%esp)
-movl $0x0676e6f6c, 8(%esp)
-movl $0x020726568, 4(%esp)
-movl $0x0746f6e61, 0(%esp)
-movl %esp, -4(%ebp)
-# end of another long hello string, hello world
-
-pushl -4(%ebp)
-call print
-addl $0, %esp
-pushl $1256434
+pushl $256
+movb (%esp), %cl
+movl $-16, %edi
+movb %cl, (%esp, %edi, 1)
+pushl -16(%ebp) #happening
 call printi
 addl $0, %esp
 subl $4, %esp
@@ -57,6 +31,7 @@ pushl -4(%ebp)
 call print
 addl $0, %esp
 pushl $0
+movb (%esp), %cl
 
 jmp return_statement
 movl %esp, -8(%ebp)
@@ -102,13 +77,8 @@ printi_loop:
 
 printi_end:
   pushl %esp
-  call strlen
+  call print
   addl $4, %esp
-  movl %esp, %ecx
-  movl %eax, %edx
-  movl $4, %eax
-  movl $1, %ebx
-  int $0x80
 
   movl %ebp, %esp
   popl %ebp

@@ -4,11 +4,7 @@
 
 int typename_to_int(const char* name)
 {
-  int t = 0;
-  size_t len = strlen(name);
+  if (strcmp(name, "int") == 0) return DATA_TYPE_INT;
 
-  for (unsigned int i = 0; i < len; i++)
-    t += name[i];
-
-  return t;
+  return DATA_TYPE_UNKNOWN;
 }

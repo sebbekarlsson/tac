@@ -12,6 +12,7 @@ AST_T* init_ast(int type)
 
   ast->stack_frame = (void*)0;
   ast->multiplier = 1;
+  ast->dtype = DATA_TYPE_UNKNOWN;
 
   return ast;
 }

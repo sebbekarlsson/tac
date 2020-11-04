@@ -1,5 +1,6 @@
 main = (argc: int, argv: Array<string>):int => {
-  printi(1256434);
+  x: int = 256;
+  printi(x);
   print("\n");
   return 0;
 }

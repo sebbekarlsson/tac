@@ -2,6 +2,7 @@
 #define TAC_AST_H
 #include "list.h"
 #include "stack_frame.h"
+#include "types.h"
 
 struct VISITOR_STRUCT;
 
@@ -21,13 +22,14 @@ typedef struct AST_STRUCT
     AST_STRING,
     AST_NOOP,
   } type;
+
+  data_type dtype;
   
   list_T* children;
   char* name;
   char* string_value;
   struct AST_STRUCT* value;
   int int_value;
-  int data_type;
   int id;
   int stack_index;
   int multiplier;

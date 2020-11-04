@@ -48,13 +48,13 @@ AST_T* parser_parse_id(parser_T* parser)
 
     while (parser->token->type == TOKEN_ID)
     {
-      ast->data_type = typename_to_int(parser->token->value);
+      ast->dtype = typename_to_int(parser->token->value);
       parser_eat(parser, TOKEN_ID);
 
       if (parser->token->type == TOKEN_LT)
       {
         parser_eat(parser, TOKEN_LT);
-        ast->data_type += typename_to_int(parser->token->value);
+        ast->dtype += typename_to_int(parser->token->value);
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_GT);
       }
@@ -143,13 +143,13 @@ AST_T* parser_parse_list(parser_T* parser)
 
     while (parser->token->type == TOKEN_ID)
     {
-      ast->data_type = typename_to_int(parser->token->value);
+      ast->dtype = typename_to_int(parser->token->value);
       parser_eat(parser, TOKEN_ID);
 
       if (parser->token->type == TOKEN_LT)
       {
         parser_eat(parser, TOKEN_LT);
-        ast->data_type += typename_to_int(parser->token->value);
+        ast->dtype += typename_to_int(parser->token->value);
         parser_eat(parser, TOKEN_ID);
         parser_eat(parser, TOKEN_GT);
       }
