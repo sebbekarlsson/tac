@@ -192,7 +192,7 @@ AST_T* parser_parse_string(parser_T* parser)
   return ast;
 }
 
-AST_T* parser_parse_expr(parser_T* parser)
+AST_T* parser_parse_factor(parser_T* parser)
 {
   switch (parser->token->type)
   {
@@ -202,6 +202,28 @@ AST_T* parser_parse_expr(parser_T* parser)
     case TOKEN_STRING: return parser_parse_string(parser);
     default: { printf("[Parser]: Unexpected token `%s`\n", token_to_str(parser->token)); exit(1); };
   }
+}
+
+AST_T* parser_parse_term(parser_T* parser)
+{
+  AST_T* ast_left = parser_parse_factor(parser);
+
+  while (parser->token->type == TOKEN_PLUS)
+  {
+    parser_eat(parser, parser->token->type);
+    AST_T* ast_binop = init_ast(AST_BINOP);
+    ast_binop->left = ast_left;
+    ast_binop->op = parser->token->type;
+    ast_binop->right = parser_parse_expr(parser);
+    return ast_binop;
+  }
+
+  return ast_left;
+}
+
+AST_T* parser_parse_expr(parser_T* parser)
+{
+  return parser_parse_term(parser);
 }
 
 AST_T* parser_parse_statement(parser_T* parser)

@@ -22,6 +22,7 @@ typedef struct TOKEN_STRUCT
     TOKEN_STRING,
     TOKEN_STATEMENT,
     TOKEN_SEMI,
+    TOKEN_PLUS,
     TOKEN_EOF,
   } type;
 } token_T;

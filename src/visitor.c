@@ -42,6 +42,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_
     case AST_ACCESS: return visitor_visit_access(visitor, node, list, stack_frame); break;
     case AST_FUNCTION: return visitor_visit_function(visitor, node, list, stack_frame); break;
     case AST_STRING: return visitor_visit_string(visitor, node, list, stack_frame); break;
+    case AST_BINOP: return visitor_visit_binop(visitor, node, list, stack_frame); break;
     case AST_STATEMENT_RETURN: return visitor_visit_statement_return(visitor, node, list, stack_frame); break;
     default: { printf("[Visitor]: Don't know how to handle AST of type `%d`\n", node->type); exit(1); } break;
   }
@@ -153,6 +154,11 @@ AST_T* visitor_visit_int(visitor_T* visitor, AST_T* node, list_T* list, stack_fr
 }
 
 AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
+{
+  return node;
+}
+
+AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
   return node;
 }

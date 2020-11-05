@@ -402,6 +402,25 @@ char* as_f_access(AST_T* ast, list_T* list)
   return s;
 }
 
+char* as_f_binop(AST_T* ast, list_T* list)
+{
+  char* s = calloc(1, sizeof(char));
+
+  char* left_f_str = as_f(ast->left, list);
+  char* right_f_str = as_f(ast->right, list);
+  s = realloc(s, (strlen(left_f_str) + strlen(right_f_str) + 1) * sizeof(char));
+  strcat(s, left_f_str);
+  strcat(s, right_f_str);
+
+ char* value = "movl 4(%esp), %eax\n"
+               "addl (%esp), %eax\n"
+               "pushl %eax\n";
+  s = realloc(s, (strlen(s) + strlen(value) + 1) * sizeof(char));
+  strcat(s, value);
+
+  return s;
+}
+
 char* as_f(AST_T* ast, list_T* list)
 {
   char* value = calloc(1, sizeof(char));
@@ -415,6 +434,7 @@ char* as_f(AST_T* ast, list_T* list)
     case AST_CALL: next_value = as_f_call(ast, list); break;
     case AST_INT: next_value = as_f_int(ast, list); break;
     case AST_STRING: next_value = as_f_string(ast, list); break;
+    case AST_BINOP: next_value = as_f_binop(ast, list); break;
     case AST_ACCESS: next_value = as_f_access(ast, list); break;
     case AST_STATEMENT_RETURN: next_value = as_f_statement_return(ast, list); break;
     case AST_FUNCTION: next_value = as_f_function(ast, list); break;

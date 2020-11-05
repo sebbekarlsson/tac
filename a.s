@@ -7,69 +7,21 @@ movl %eax, %ebx
 movl $1, %eax
 int $0x80
 
-.globl hello
-hello:
-pushl %ebp
-movl %esp, %ebp
-subl $16, %esp
-pushl 8(%ebp) #happening
-call print
-addl $0, %esp
-pushl 12(%ebp) #happening
-call print
-addl $0, %esp
-pushl 16(%ebp) #happening
-call print
-addl $0, %esp
-pushl $0
-movb (%esp), %cl
-
-jmp return_statement
-movl %esp, -8(%ebp)
 .globl main
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $24, %esp
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a, 16(%esp)
-movl $0x0676e6972, 12(%esp)
-movl $0x074732074, 8(%esp)
-movl $0x073726966, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -16(%ebp)
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a67, 16(%esp)
-movl $0x06e697274, 12(%esp)
-movl $0x07320646e, 8(%esp)
-movl $0x06f636573, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -20(%ebp)
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a, 16(%esp)
-movl $0x0676e6972, 12(%esp)
-movl $0x074732064, 8(%esp)
-movl $0x072696874, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -24(%ebp)
-subl $4, %esp
 subl $12, %esp
-movl $0x0, 8(%esp)
-movl $0x06f, 4(%esp)
-movl $0x06c6c6568, 0(%esp)
-movl %esp, -4(%ebp)
-# end of hello
-pushl -4(%ebp)
-call print
-addl $0, %esp
-pushl $0
+pushl $10
 movb (%esp), %cl
+pushl $6
+movb (%esp), %cl
+movl 4(%esp), %eax
+addl (%esp), %eax
+pushl %eax
 
 jmp return_statement
-movl %esp, -12(%ebp)
+movl %esp, -8(%ebp)
 print:
  pushl %ebp
  movl %esp, %ebp

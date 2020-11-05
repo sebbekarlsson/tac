@@ -20,6 +20,7 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, sta
 AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
 AST_T* visitor_visit_int(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
 AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
+AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
 AST_T* visitor_visit_statement_return(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
 AST_T* visitor_visit_access(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame);
 #endif

@@ -20,6 +20,7 @@ typedef struct AST_STRUCT
     AST_ACCESS,
     AST_INT,
     AST_STRING,
+    AST_BINOP,
     AST_NOOP,
   } type;
 
@@ -29,6 +30,9 @@ typedef struct AST_STRUCT
   char* name;
   char* string_value;
   struct AST_STRUCT* value;
+  struct AST_STRUCT* left;
+  struct AST_STRUCT* right;
+  int op;
   int int_value;
   int id;
   int stack_index;
