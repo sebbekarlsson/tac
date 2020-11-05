@@ -122,6 +122,7 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, sta
     list_push(func->children, (AST_T*) visitor_visit(visitor, (AST_T*) node->children->items[i], list, new_stack_frame));
 
   func->value = visitor_visit(visitor, node->value, func->children, new_stack_frame);
+  func->stack_frame = new_stack_frame;
 
   return func;
 }

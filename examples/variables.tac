@@ -13,7 +13,7 @@ main = (argc: int, argv: Array<string>):int => {
   bar:string = "the second string\n";
   far:string = "the third string\n";
   
-  // print("hello");
+  print("hello");
 
   return 0;
 };

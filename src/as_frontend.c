@@ -81,35 +81,8 @@ const char BOOTSTRAP_TEMPLATE[] =
 "   popl %ebp\n"
 "   ret\n";
 
-static AST_T* var_lookup(list_T* list, const char* name)
-{
-  for (int i = 0; i < (int) list->size; i++)
-  {
-    AST_T* child_ast = (AST_T*) list->items[i];
-
-    if (child_ast->type != AST_VARIABLE || !child_ast->name)
-      continue;
-
-    if (strcmp(child_ast->name, name) == 0)
-      return child_ast;
-  }
-
-  return 0;
-}
-
 char* as_f_compound(AST_T* ast, list_T* list) {
-  char* value = calloc(1, sizeof(char));
-
-  if (ast->stack_frame->stack->size)
-  {
-    const char* subl_template = "subl $%d, %%esp\n";
-    char* subl = calloc(strlen(subl_template) + 128, sizeof(char));
-    sprintf(subl, subl_template, (ast->stack_frame->stack->size) * 4);
-   
-    value = realloc(value, (strlen(value) + strlen(subl) + 1) * sizeof(char));
-    strcat(value, subl);
-    free(subl);
-  }
+  char* value = calloc(1, sizeof(char)); 
 
   for (unsigned int i = 0; i < ast->children->size; i++)
   {
@@ -127,7 +100,6 @@ char* as_f_function(AST_T* ast, list_T* list)
   AST_T* parent = list->size ? (AST_T*)list->items[list->size-1] : (AST_T*)0;
   if (!parent) return 0;
 
-
   list->items[list->size-1] = 0;
   list->size -= 1;
 
@@ -137,27 +109,38 @@ char* as_f_function(AST_T* ast, list_T* list)
                            "%s:\n"
                            "pushl %%ebp\n"
                            "movl %%esp, %%ebp\n";
-    char* s = calloc((strlen(template) + (strlen(name)*2) + 1), sizeof(char));
-    sprintf(s, template, name, name);
+  char* s = calloc((strlen(template) + (strlen(name)*2) + 1), sizeof(char));
+  sprintf(s, template, name, name);
 
-    AST_T* as_val = ast;
+  if (ast->stack_frame->stack->size)
+  {
+    const char* subl_template = "subl $%d, %%esp\n";
+    char* subl = calloc(strlen(subl_template) + 128, sizeof(char));
+    sprintf(subl, subl_template, (1 + ast->stack_frame->stack->size) * 4);
+   
+    s = realloc(s, (strlen(s) + strlen(subl) + 1) * sizeof(char));
+    strcat(s, subl);
+    free(subl);
+  }
 
-    for (unsigned int i = 0; i < as_val->children->size; i++)
-    {
-      AST_T* farg = (AST_T*) as_val->children->items[i];
-      AST_T* arg_variable = init_ast(AST_VARIABLE);
-      arg_variable->name = farg->name;
-      arg_variable->int_value = (4 * as_val->children->size) - (i*4);
-      list_push(list, arg_variable);
-    }
-    
-    char* as_val_val = as_f(as_val->value, list);
+  AST_T* as_val = ast;
 
-    s = realloc(s, (strlen(s) + strlen(as_val_val) + 1) * sizeof(char));
-    strcat(s, as_val_val);
-    free(as_val_val);
+  for (unsigned int i = 0; i < as_val->children->size; i++)
+  {
+    AST_T* farg = (AST_T*) as_val->children->items[i];
+    AST_T* arg_variable = init_ast(AST_VARIABLE);
+    arg_variable->name = farg->name;
+    arg_variable->int_value = (4 * as_val->children->size) - (i*4);
+    list_push(list, arg_variable);
+  }
+  
+  char* as_val_val = as_f(as_val->value, list);
 
-    return s;
+  s = realloc(s, (strlen(s) + strlen(as_val_val) + 1) * sizeof(char));
+  strcat(s, as_val_val);
+  free(as_val_val);
+
+  return s;
 }
 
 char* as_f_assignment(AST_T* ast, list_T* list)
