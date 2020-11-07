@@ -11,14 +11,23 @@ int $0x80
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $12, %esp
-pushl $10
-movb (%esp), %cl
+subl $16, %esp
 pushl $6
 movb (%esp), %cl
-movl 4(%esp), %eax
-addl (%esp), %eax
+pushl $16
+movb (%esp), %cl
+popl %eax
+subl (%esp), %eax
+addl $4, %esp
 pushl %eax
+movb (%esp), %cl
+movl $-16, %edi
+movb %cl, (%ebp, %edi, 1)
+pushl -16(%ebp) #happening
+call printi
+addl $0, %esp
+pushl $0
+movb (%esp), %cl
 
 jmp return_statement
 movl %esp, -8(%ebp)

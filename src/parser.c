@@ -208,12 +208,15 @@ AST_T* parser_parse_term(parser_T* parser)
 {
   AST_T* ast_left = parser_parse_factor(parser);
 
-  while (parser->token->type == TOKEN_PLUS)
+  while (
+      parser->token->type == TOKEN_PLUS ||
+      parser->token->type == TOKEN_MINUS
+  )
   {
-    parser_eat(parser, parser->token->type);
     AST_T* ast_binop = init_ast(AST_BINOP);
     ast_binop->left = ast_left;
     ast_binop->op = parser->token->type;
+    parser_eat(parser, parser->token->type);
     ast_binop->right = parser_parse_expr(parser);
     return ast_binop;
   }

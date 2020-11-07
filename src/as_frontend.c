@@ -1,5 +1,6 @@
 #include "include/as_frontend.h"
 #include "include/utils.h"
+#include "include/token.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -172,7 +173,7 @@ char* as_f_assignment(AST_T* ast, list_T* list)
   if (ast->dtype == DATA_TYPE_INT)
   {
     const char* mo_template = "movl $-%d, %%edi\n"
-                              "movb %%cl, (%%esp, %%edi, 1)\n";
+                              "movb %%cl, (%%ebp, %%edi, 1)\n";
     char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
     sprintf(mo, mo_template, id);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
@@ -409,14 +410,34 @@ char* as_f_binop(AST_T* ast, list_T* list)
   char* left_f_str = as_f(ast->left, list);
   char* right_f_str = as_f(ast->right, list);
   s = realloc(s, (strlen(left_f_str) + strlen(right_f_str) + 1) * sizeof(char));
-  strcat(s, left_f_str);
   strcat(s, right_f_str);
+  strcat(s, left_f_str);
 
- char* value = "movl 4(%esp), %eax\n"
+
+  char* value = 0;
+
+  if (ast->op == TOKEN_PLUS)
+  {
+    value = "popl %eax\n"
                "addl (%esp), %eax\n"
-               "pushl %eax\n";
-  s = realloc(s, (strlen(s) + strlen(value) + 1) * sizeof(char));
-  strcat(s, value);
+               "addl $4, %esp\n"
+               "pushl %eax\n"
+               "movb (%esp), %cl\n"; 
+  }
+  else
+  {
+    value = "popl %eax\n"
+               "subl (%esp), %eax\n"
+               "addl $4, %esp\n"
+               "pushl %eax\n"
+               "movb (%esp), %cl\n";
+  }
+
+  if (value)
+  {
+    s = realloc(s, (strlen(s) + strlen(value) + 1) * sizeof(char));
+    strcat(s, value);
+  }
 
   return s;
 }

@@ -168,6 +168,7 @@ token_T* lexer_next_token(lexer_T* lexer)
       case '>': return lexer_advance_current(lexer, TOKEN_GT);
       case ';': return lexer_advance_current(lexer, TOKEN_SEMI);
       case '+': return lexer_advance_current(lexer, TOKEN_PLUS);
+      case '-': return lexer_advance_current(lexer, TOKEN_MINUS);
       case '"': return lexer_parse_string(lexer);
       case '\0': break;
       default: printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (int)lexer->c); exit(1); break;
