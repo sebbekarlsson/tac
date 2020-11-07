@@ -46,22 +46,19 @@ make
 > **Note** Tac only supports building 32-bit executables at the moment.
 
 ## Todo ( in no particular order )
-```
-X = done
-/ = in progress
-```
+> _Some of these are in progress and not marked as checked_
 - [X] Implement variable assignments
 - [X] Implement function definitions
 - [X] Implement function calls
 - [ ] Implement conditions
-- [/] Implement arithmetic
+- [ ] Implement arithmetic
 - [ ] Implement while-loops
 - [ ] Implement for-loops
 - [ ] Implement floats
 - [X] Implement integers
 - [X] Implement main method
 - [ ] Implement objects
-- [/] Implement arrays
+- [ ] Implement arrays
 - [ ] Implement enums
 - [X] Implement comments
 - [ ] Implement C-header parser
