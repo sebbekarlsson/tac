@@ -28,6 +28,7 @@ main = (argc: int, argv: Array<string>):int => {
 > The compiler currently has these dependencies:
 * as (1)               - the portable GNU assembler.
 * ld (1)               - The GNU linker
+* xxdi
 
 ### Building
 > To build the **Tac** compiler, simply run:
