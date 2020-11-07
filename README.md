@@ -46,19 +46,28 @@ make
 > **Note** Tac only supports building 32-bit executables at the moment.
 
 ## Todo ( in no particular order )
-- [ ] Implement variable assignments
+```
+X = done
+/ = in progress
+```
+- [X] Implement variable assignments
+- [X] Implement function definitions
+- [X] Implement function calls
 - [ ] Implement conditions
-- [ ] Implement arithmetic
+- [/] Implement arithmetic
 - [ ] Implement while-loops
 - [ ] Implement for-loops
 - [ ] Implement floats
+- [X] Implement integers
+- [X] Implement main method
 - [ ] Implement objects
-- [ ] Implement arrays
+- [/] Implement arrays
 - [ ] Implement enums
-- [ ] Implement comments
+- [X] Implement comments
 - [ ] Implement C-header parser
-- [ ] Implement calling functions from libraries
+- [ ] Implement calling functions from shared libraries (.so, .obj, .a, ...)
 - [ ] Add 64-bit support
 - [ ] Implement type guards in the compiler
 - [ ] Get rid of "GNU Assembler" dependency
 - [ ] Get rid of "GNU Linker" dependency
+- [ ] Get rid of "xxdi" dependency
