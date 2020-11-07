@@ -1,36 +1,3 @@
-.section .text
-.globl _start
-_start:
-movl %esp, %ebp
-call main
-movl %eax, %ebx
-movl $1, %eax
-int $0x80
-
-.globl main
-main:
-pushl %ebp
-movl %esp, %ebp
-subl $16, %esp
-pushl $6
-movb (%esp), %cl
-pushl $16
-movb (%esp), %cl
-popl %eax
-subl (%esp), %eax
-addl $4, %esp
-pushl %eax
-movb (%esp), %cl
-movl $-16, %edi
-movb %cl, (%ebp, %edi, 1)
-pushl -16(%ebp) #happening
-call printi
-addl $0, %esp
-pushl $0
-movb (%esp), %cl
-
-jmp return_statement
-movl %esp, -8(%ebp)
 print:
  pushl %ebp
  movl %esp, %ebp

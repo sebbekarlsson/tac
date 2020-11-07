@@ -1,86 +1,10 @@
 #include "include/as_frontend.h"
 #include "include/utils.h"
 #include "include/token.h"
+#include "include/bootstrap.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-const char BOOTSTRAP_TEMPLATE[] =
-"print:\n"
-" pushl \%ebp\n"
-" movl \%esp, \%ebp\n"
-" pushl 8(\%esp)\n"
-" call strlen\n"
-" addl $4, \%esp\n"
-" movl 8(\%esp), \%ecx\n" // buffer
-" movl \%eax, \%edx\n" // size
-" movl $4, \%eax\n" // syscall write
-" movl $1, \%ebx\n" // stdout
-" movl \%ebp, \%esp\n"
-" popl \%ebp\n"
-" int $0x80\n"
-" ret\n"
-"\n"
-".type printi, @function\n"
-"printi:\n"
-" pushl %ebp\n"
-" movl %esp, %ebp\n"
-"\n"  
-" movl 8(%esp), %eax\n"
-"\n"
-" pushl $0x0\n"
-" jmp printi_loop\n" 
-"\n"
-"\n"
-"printi_loop:\n"
-"  movl $0, %edx\n"
-"\n"
-"  movl $10, %ecx\n"
-"  div %ecx\n"
-"\n"  
-"  addl $48, %edx\n"
-"  pushl %edx\n"
-"\n"
-"  test %eax, %eax\n"
-"  je printi_end\n"
-"\n"
-"  jmp printi_loop\n"
-"\n"
-"printi_end:\n"
-"  pushl %esp\n"
-"  call print\n"
-"  addl $4, %esp\n"
-"\n"
-"  movl %ebp, %esp\n"
-"  popl %ebp\n"
-"  ret\n"
-"\n"
-"return_statement:\n"
-" popl \%eax\n"
-" movl \%ebp, \%esp\n"
-" popl \%ebp\n\n"
-" ret\n"
-"\n"
-" .type strlen, @function\n"
-" strlen:\n"
-"   pushl %ebp\n"
-"   movl %esp, %ebp\n"
-"   movl $0, %edi\n"
-"   movl 8(%esp), %eax\n"
-"   jmp strlenloop\n"
-"\n" 
-" strlenloop:\n"
-"   movb (%eax, %edi, 1), %cl\n"
-"   cmpb $0, %cl\n"
-"   je strlenend\n"
-"   addl $4, %edi\n"
-"   jmp strlenloop\n"
-"\n"
-" strlenend:\n"
-"   movl %edi, %eax\n"
-"   movl %ebp, %esp\n"
-"   popl %ebp\n"
-"   ret\n";
 
 char* as_f_compound(AST_T* ast, list_T* list) {
   char* value = calloc(1, sizeof(char)); 
@@ -378,8 +302,8 @@ char* as_f_root(AST_T* ast, list_T* list)
   value = (char*) realloc(value, (strlen(value) + strlen(next_value) + 1) * sizeof(char));
   strcat(value, next_value);
 
-  value = realloc(value, (strlen(value) + strlen(BOOTSTRAP_TEMPLATE) + 1) * sizeof(char));
-  strcat(value, BOOTSTRAP_TEMPLATE);
+  value = realloc(value, (strlen(value) + src_asm_bootstrap_asm_len + 1) * sizeof(char));
+  strcat(value, (char*) src_asm_bootstrap_asm);
 
   return value;
 }

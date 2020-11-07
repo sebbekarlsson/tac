@@ -50,11 +50,11 @@ print:
 printi:
  pushl %ebp
  movl %esp, %ebp
-
+  
  movl 8(%esp), %eax
 
  pushl $0x0
- jmp printi_loop
+ jmp printi_loop 
 
 
 printi_loop:
@@ -62,7 +62,7 @@ printi_loop:
 
   movl $10, %ecx
   div %ecx
-
+  
   addl $48, %edx
   pushl %edx
 
@@ -84,7 +84,6 @@ return_statement:
  popl %eax
  movl %ebp, %esp
  popl %ebp
-
  ret
 
  .type strlen, @function
@@ -94,7 +93,7 @@ return_statement:
    movl $0, %edi
    movl 8(%esp), %eax
    jmp strlenloop
-
+ 
  strlenloop:
    movb (%eax, %edi, 1), %cl
    cmpb $0, %cl
