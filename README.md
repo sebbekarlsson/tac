@@ -8,6 +8,10 @@
 > **Tac** is not to be taken seriously in any kind of way at this moment,
 > since it is just another toy project of mine.
 
+## btw
+> By the way, you can watch me work on this compiler on Youtube here:  
+> [https://www.youtube.com/watch?v=PRcMPwaWj1Y&list=PLvaIU2QC2uvFnVxXe-XzXJfd4dXGz5qBB](https://www.youtube.com/watch?v=PRcMPwaWj1Y&list=PLvaIU2QC2uvFnVxXe-XzXJfd4dXGz5qBB)
+
 ## "Hello World" Example
 > Here is "Hello World" in **Tac**:
 ```
