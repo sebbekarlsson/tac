@@ -44,14 +44,6 @@ list_T* str_to_hex_chunks(const char* instr)
 
     if (((i > 0 && (strlen(tmp) % 4 == 0)) || i >= len-1 ) || instr[i] == '\n' || instr[i] == '\t')
     {
-      size_t tmp_len = strlen(tmp);
-      if (tmp_len < 4) {
-        printf("%s\n", tmp);
-        size_t diff = 4 - tmp_len;
-        tmp = realloc(tmp, (tmp_len + diff));
-
-        memset((tmp-(tmp_len+diff)), 0, diff);
-      }
       char* hexstr = str_to_hex(tmp);
       free(tmp);
       list_push(list, hexstr);

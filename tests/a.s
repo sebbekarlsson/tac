@@ -22,7 +22,7 @@ movl %esp, -4(%ebp)
 # end of Hello World
 pushl -4(%ebp)
 call print
-addl $4, %esp
+addl $0, %esp
 pushl $0
 movb (%esp), %cl
 
@@ -71,7 +71,7 @@ printi_loop:
 printi_end:
   pushl %esp
   call print
-  addl $0, %esp
+  addl $4, %esp
 
   movl %ebp, %esp
   popl %ebp
@@ -87,15 +87,15 @@ return_statement:
 strlen:
   pushl %ebp
   movl %esp, %ebp
-  movl $4, %edi
+  movl $0, %edi
   movl 8(%esp), %eax
   jmp strlenloop
 
 strlenloop:
-  movb (%eax, %edi, 1), %cl
-  cmpb $0, %cl
+  inc %eax
+  addl $1, %edi
+  cmpl $0x0, (%eax)
   je strlenend
-  addl $4, %edi
   jmp strlenloop
 
 strlenend:
@@ -103,4 +103,4 @@ strlenend:
   movl %ebp, %esp
   popl %ebp
   ret
-
+  
