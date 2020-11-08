@@ -24,6 +24,8 @@ typedef struct TOKEN_STRUCT
     TOKEN_SEMI,
     TOKEN_PLUS,
     TOKEN_MINUS,
+    TOKEN_DIV,
+    TOKEN_MUL,
     TOKEN_EOF,
   } type;
 } token_T;

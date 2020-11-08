@@ -53,23 +53,24 @@ return_statement:
  popl %ebp
  ret
 
- .type strlen, @function
- strlen:
-   pushl %ebp
-   movl %esp, %ebp
-   movl $0, %edi
-   movl 8(%esp), %eax
-   jmp strlenloop
- 
- strlenloop:
-   movb (%eax, %edi, 1), %cl
-   cmpb $0, %cl
-   je strlenend
-   addl $4, %edi
-   jmp strlenloop
+.type strlen, @function
+strlen:
+  pushl %ebp
+  movl %esp, %ebp
+  movl $0, %edi
+  movl 8(%esp), %eax
+  jmp strlenloop
 
- strlenend:
-   movl %edi, %eax
-   movl %ebp, %esp
-   popl %ebp
-   ret
+strlenloop:
+  movb (%eax, %edi, 1), %cl
+  cmpb $0, %cl
+  je strlenend
+  addl $4, %edi
+  jmp strlenloop
+
+strlenend:
+  movl %edi, %eax
+  movl %ebp, %esp
+  popl %ebp
+  ret
+

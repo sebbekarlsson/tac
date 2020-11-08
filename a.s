@@ -12,18 +12,22 @@ main:
 pushl %ebp
 movl %esp, %ebp
 subl $16, %esp
-pushl $6
+pushl $10
 movb (%esp), %cl
-pushl $16
+# assign (x)
+movl $-16, %edi
+movb %cl, (%ebp, %edi, 1)
+pushl $2
 movb (%esp), %cl
+# variable (x)
+pushl -16(%ebp)
+# division
 popl %eax
-subl (%esp), %eax
+popl %ecx
+div %ecx
 addl $4, %esp
 pushl %eax
 movb (%esp), %cl
-movl $-16, %edi
-movb %cl, (%ebp, %edi, 1)
-pushl -16(%ebp) #happening
 call printi
 addl $0, %esp
 pushl $0
@@ -86,23 +90,24 @@ return_statement:
  popl %ebp
  ret
 
- .type strlen, @function
- strlen:
-   pushl %ebp
-   movl %esp, %ebp
-   movl $0, %edi
-   movl 8(%esp), %eax
-   jmp strlenloop
- 
- strlenloop:
-   movb (%eax, %edi, 1), %cl
-   cmpb $0, %cl
-   je strlenend
-   addl $4, %edi
-   jmp strlenloop
+.type strlen, @function
+strlen:
+  pushl %ebp
+  movl %esp, %ebp
+  movl $0, %edi
+  movl 8(%esp), %eax
+  jmp strlenloop
 
- strlenend:
-   movl %edi, %eax
-   movl %ebp, %esp
-   popl %ebp
-   ret
+strlenloop:
+  movb (%eax, %edi, 1), %cl
+  cmpb $0, %cl
+  je strlenend
+  addl $4, %edi
+  jmp strlenloop
+
+strlenend:
+  movl %edi, %eax
+  movl %ebp, %esp
+  popl %ebp
+  ret
+

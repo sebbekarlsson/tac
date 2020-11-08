@@ -96,10 +96,11 @@ char* as_f_assignment(AST_T* ast, list_T* list)
   
   if (ast->dtype == DATA_TYPE_INT)
   {
-    const char* mo_template = "movl $-%d, %%edi\n"
+    const char* mo_template = "# assign (%s)\n"
+                              "movl $-%d, %%edi\n"
                               "movb %%cl, (%%ebp, %%edi, 1)\n";
     char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-    sprintf(mo, mo_template, id);
+    sprintf(mo, mo_template, ast->name, id);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
     strcat(s, mo); 
   }
@@ -118,10 +119,11 @@ char* as_f_assignment(AST_T* ast, list_T* list)
 char* as_f_variable(AST_T* ast, list_T* list) {
   char* s = calloc(1, sizeof(char));
 
-  const char* template = "pushl %d(%%ebp) #happening\n";
+  const char* template = "# variable (%s)\n"
+                         "pushl %d(%%ebp)\n";
   int id = (ast->stack_index*4);
   s = realloc(s, (strlen(template) + 8) * sizeof(char));
-  sprintf(s, template, id);
+  sprintf(s, template, ast->name, id);
 
   return s;
 }
@@ -342,19 +344,43 @@ char* as_f_binop(AST_T* ast, list_T* list)
 
   if (ast->op == TOKEN_PLUS)
   {
-    value = "popl %eax\n"
-               "addl (%esp), %eax\n"
-               "addl $4, %esp\n"
-               "pushl %eax\n"
-               "movb (%esp), %cl\n"; 
+    value =  "# addition\n"
+             "popl %eax\n"
+             "addl (%esp), %eax\n"
+             "addl $4, %esp\n"
+             "pushl %eax\n"
+             "movb (%esp), %cl\n"; 
   }
   else
+  if (ast->op == TOKEN_MINUS)
   {
-    value = "popl %eax\n"
-               "subl (%esp), %eax\n"
-               "addl $4, %esp\n"
-               "pushl %eax\n"
-               "movb (%esp), %cl\n";
+    value = "# subtraction\n"
+            "popl %eax\n"
+            "subl (%esp), %eax\n"
+            "addl $4, %esp\n"
+            "pushl %eax\n"
+            "movb (%esp), %cl\n";
+  }
+  else
+  if (ast->op == TOKEN_MUL)
+  {
+    value =  "# multiplication\n"
+             "popl %eax\n"
+             "imull (%esp), %eax\n"
+             "addl $4, %esp\n"
+             "pushl %eax\n"
+             "movb (%esp), %cl\n";
+  }
+  else
+  if (ast->op == TOKEN_DIV)
+  {
+    value =  "# division\n"
+             "popl %eax\n"
+             "popl %ecx\n"
+             "div %ecx\n"
+             "addl $4, %esp\n"
+             "pushl %eax\n"
+             "movb (%esp), %cl\n";
   }
 
   if (value)

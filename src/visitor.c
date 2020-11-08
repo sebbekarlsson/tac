@@ -107,6 +107,7 @@ AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, list_T* list, sta
   int stack_index = 2 + list_indexof_str(stack_frame->stack, node->name);
   node->stack_index = is_positive ? (stack_index) : -stack_index;
 
+
   return node;
 }
 
@@ -160,7 +161,11 @@ AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, list_T* list, stack
 
 AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
-  return node;
+  AST_T* new_binop = init_ast(AST_BINOP);
+  new_binop->left = visitor_visit(visitor, node->left, list, stack_frame);
+  new_binop->op = node->op;
+  new_binop->right = visitor_visit(visitor, node->left, list, stack_frame);
+  return new_binop;
 }
 
 AST_T* visitor_visit_statement_return(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
