@@ -11,24 +11,18 @@ int $0x80
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $16, %esp
-pushl $10
-movb (%esp), %cl
-# assign (x)
-movl $-16, %edi
-movb %cl, (%ebp, %edi, 1)
-pushl $2
-movb (%esp), %cl
-# variable (x)
-pushl -16(%ebp)
-# division
-popl %eax
-popl %ecx
-div %ecx
-addl $4, %esp
-pushl %eax
-movb (%esp), %cl
-call printi
+subl $12, %esp
+subl $4, %esp
+subl $20, %esp
+movl $0x0, 16(%esp)
+movl $0x021, 12(%esp)
+movl $0x021646c72, 8(%esp)
+movl $0x06f57206f, 4(%esp)
+movl $0x06c6c6548, 0(%esp)
+movl %esp, -4(%ebp)
+# end of Hello World!!
+pushl -4(%ebp)
+call print
 addl $0, %esp
 pushl $0
 movb (%esp), %cl

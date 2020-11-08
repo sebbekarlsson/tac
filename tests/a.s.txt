@@ -13,14 +13,13 @@ pushl %ebp
 movl %esp, %ebp
 subl $12, %esp
 subl $4, %esp
-subl $20, %esp
-movl $0x0, 16(%esp)
-movl $0x021, 12(%esp)
-movl $0x021646c72, 8(%esp)
+subl $16, %esp
+movl $0x0, 12(%esp)
+movl $0x0646c72, 8(%esp)
 movl $0x06f57206f, 4(%esp)
 movl $0x06c6c6548, 0(%esp)
 movl %esp, -4(%ebp)
-# end of Hello World!!
+# end of Hello World
 pushl -4(%ebp)
 call print
 addl $0, %esp

@@ -266,6 +266,7 @@ char* as_f_string(AST_T* ast, list_T* list)
     char* pushhex = (char*) chunks->items[(chunks->size - i)-1];
     char* push = calloc(strlen(pushhex) + strlen(pushtemplate) + 1, sizeof(char));
     sprintf(push, pushtemplate, pushhex, bytes_counter);
+    printf("-->%s\n", push);
     strpush = realloc(strpush, (strlen(strpush) + strlen(push) + 1) * sizeof(char));
     strcat(strpush, push);
     free(pushhex);
