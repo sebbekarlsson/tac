@@ -7,21 +7,21 @@ movl %eax, %ebx
 movl $1, %eax
 int $0x80
 
-.globl main
-main:
+.globl hello
+hello:
 pushl %ebp
 movl %esp, %ebp
-subl $12, %esp
-subl $4, %esp
-subl $20, %esp
-movl $0x0, 16(%esp)
-movl $0x021, 12(%esp)
-movl $0x021646c72, 8(%esp)
-movl $0x06f57206f, 4(%esp)
-movl $0x06c6c6548, 0(%esp)
-movl %esp, -4(%ebp)
-# end of Hello World!!
-pushl -4(%ebp)
+subl $16, %esp
+# variable (x)
+pushl 8(%ebp)
+call print
+addl $0, %esp
+# variable (y)
+pushl 12(%ebp)
+call print
+addl $0, %esp
+# variable (z)
+pushl 16(%ebp)
 call print
 addl $0, %esp
 pushl $0
@@ -29,6 +29,67 @@ movb (%esp), %cl
 
 jmp return_statement
 movl %esp, -8(%ebp)
+.globl main
+main:
+pushl %ebp
+movl %esp, %ebp
+subl $24, %esp
+subl $24, %esp
+movl $0x0, 20(%esp)
+movl $0x0a, 16(%esp)
+movl $0x0676e6972, 12(%esp)
+movl $0x074732074, 8(%esp)
+movl $0x073726966, 4(%esp)
+movl $0x020656874, 0(%esp)
+movl %esp, -16(%ebp)
+subl $24, %esp
+movl $0x0, 20(%esp)
+movl $0x0a67, 16(%esp)
+movl $0x06e697274, 12(%esp)
+movl $0x07320646e, 8(%esp)
+movl $0x06f636573, 4(%esp)
+movl $0x020656874, 0(%esp)
+movl %esp, -20(%ebp)
+subl $24, %esp
+movl $0x0, 20(%esp)
+movl $0x0a, 16(%esp)
+movl $0x0676e6972, 12(%esp)
+movl $0x074732064, 8(%esp)
+movl $0x072696874, 4(%esp)
+movl $0x020656874, 0(%esp)
+movl %esp, -24(%ebp)
+# variable (foo)
+pushl -16(%ebp)
+call print
+addl $0, %esp
+subl $4, %esp
+subl $12, %esp
+movl $0x0, 8(%esp)
+movl $0x0a, 4(%esp)
+movl $0x06f796f79, 0(%esp)
+movl %esp, -4(%ebp)
+# end of yoyo
+
+pushl -4(%ebp)
+call print
+addl $0, %esp
+# variable (bar)
+pushl -20(%ebp)
+call print
+addl $0, %esp
+# variable (far)
+pushl -24(%ebp)
+call print
+addl $0, %esp
+pushl $256
+movb (%esp), %cl
+call printi
+addl $0, %esp
+pushl $0
+movb (%esp), %cl
+
+jmp return_statement
+movl %esp, -12(%ebp)
 print:
  pushl %ebp
  movl %esp, %ebp
@@ -93,11 +154,10 @@ strlen:
   jmp strlenloop
 
 strlenloop:
-  inc %eax
-  addl $1, %edi
-  #movl (%eax, %edi, 1), %esp
-  cmpl $0x0, (%eax)
+  movb (%eax, %edi, 1), %cl
+  cmpb $0, %cl
   je strlenend
+  addl $1, %edi
   jmp strlenloop
 
 strlenend:
@@ -105,4 +165,4 @@ strlenend:
   movl %ebp, %esp
   popl %ebp
   ret
-  
+ 

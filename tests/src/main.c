@@ -20,6 +20,15 @@ void test_output_hello_world()
   printf("[Success]: test_output_hello_world\n");
 }
 
+void test_output_variables()
+{
+  tac_compile_file("src/input_files/variables.tac");
+  char* output = sh("./a.out");
+  char* expected_output = tac_read_file("src/output_files/variables.tac");
+  assert(strcmp(output, expected_output) == 0);
+  printf("[Success]: test_output_variables\n");
+}
+
 void test_output_arith_add()
 {
   tac_compile_file("src/input_files/arith_add.tac");
@@ -33,6 +42,8 @@ int main(int argc, char* argv[])
 {
   test_compiler_does_not_segfault();
   test_output_hello_world();
+  test_output_variables();
+  test_output_arith_add();
 
 
   printf("[Success]: All tests completed successfully!\n");

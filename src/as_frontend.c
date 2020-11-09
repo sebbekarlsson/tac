@@ -2,6 +2,7 @@
 #include "include/utils.h"
 #include "include/token.h"
 #include "include/bootstrap.h"
+#include "include/macros.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -312,19 +313,16 @@ char* as_f_root(AST_T* ast, list_T* list)
 
 char* as_f_access(AST_T* ast, list_T* list)
 {
-  int offset = 12 + (ast->int_value * 4);
+  int offset = 4 + (ast->id * 4);
   
 
   const char* template = "# access\n"
-                         "pushl %d(%%ebp)\n";
+                         "movl $%d, %%edi\n"
+                         "leal (%%ebp, %%edi, 1), %%eax\n"
+                         "pushl %d(%%eax)\n";
 
   char* s = calloc(strlen(template) + 128, sizeof(char));
-  sprintf(s, template, offset);
-
-  const char* strlenas = "call strlen\n"
-                         "pushl %eax\n";
-
-  strcat(s, strlenas);
+  sprintf(s, template, offset, MAX(4, (ast->int_value + 1) * 4));
 
   return s;
 }

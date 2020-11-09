@@ -177,17 +177,7 @@ AST_T* visitor_visit_statement_return(visitor_T* visitor, AST_T* node, list_T* l
 
 AST_T* visitor_visit_access(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
-  int id = 0;
-  for (unsigned int i = list->size; i > 0; i--)
-  {
-    if (strcmp(((AST_T*)list->items[i-1])->name, node->name) == 0)
-    {
-      id = i;
-      break;
-    }
-  }
-
-  node->id = id;
+  node->id = list_indexof_str(stack_frame->stack, node->name);
 
   return node;
 }

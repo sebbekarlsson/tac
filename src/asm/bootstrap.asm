@@ -62,10 +62,10 @@ strlen:
   jmp strlenloop
 
 strlenloop:
-  inc %eax
-  addl $1, %edi
-  cmpl $0x0, (%eax)
+  movb (%eax, %edi, 1), %cl
+  cmpb $0, %cl
   je strlenend
+  addl $1, %edi
   jmp strlenloop
 
 strlenend:
@@ -73,4 +73,4 @@ strlenend:
   movl %ebp, %esp
   popl %ebp
   ret
-  
+ 
