@@ -13,18 +13,21 @@ print:
  int $0x80
  ret
 
-.type printi, @function
-printi:
+.type itos, @function
+itos:
  pushl %ebp
  movl %esp, %ebp
   
- movl 8(%esp), %eax
+ movl 8(%esp), %eax           # number
+ movl $12, %edi
+ leal (%esp, %edi, 1), %ebx   # buffer
+ movl $0, %edi                # counter
 
  pushl $0x0
- jmp printi_loop 
+ jmp itos_loop 
 
 
-printi_loop:
+itos_loop:
   movl $0, %edx
 
   movl $10, %ecx
@@ -33,16 +36,18 @@ printi_loop:
   addl $48, %edx
   pushl %edx
 
+  movb (%esp), %cl
+  movb %cl, (%ebx, %edi, 1)
+
   test %eax, %eax
-  je printi_end
+  je itos_end
 
-  jmp printi_loop
+  dec %edi
 
-printi_end:
-  pushl %esp
-  call print
-  addl $4, %esp
+  jmp itos_loop
 
+itos_end:
+  leal (%ebx, %edi, 1), %eax
   movl %ebp, %esp
   popl %ebp
   ret
@@ -72,5 +77,4 @@ strlenend:
   movl %edi, %eax
   movl %ebp, %esp
   popl %ebp
-  ret
- 
+  ret 

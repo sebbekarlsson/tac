@@ -1,6 +1,7 @@
 #include "include/visitor.h"
 #include "include/builtins.h"
 #include "include/compiler_errors.h"
+#include "include/utils.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -84,6 +85,7 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
   list_push(stack_frame->stack, new_var->name);
 
   new_var->stack_index = stack_frame->stack->size + 1;
+  new_var->stack_frame = stack_frame;
 
   return new_var;
 }
@@ -106,6 +108,8 @@ AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, list_T* list, sta
 
   int stack_index = 2 + list_indexof_str(stack_frame->stack, node->name);
   node->stack_index = is_positive ? (stack_index) : -stack_index;
+  node->stack_frame = stack_frame;
+  list_push(stack_frame->stack, 0);
 
 
   return node;
@@ -141,21 +145,32 @@ AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list, stack_f
   if (var)
   {
     if (var->fptr)
-      return var->fptr(visitor, node, new_args);
+    {
+      AST_T* ret = var->fptr(visitor, node, new_args);
+      ret->stack_frame = stack_frame;
+      return ret;
+    }
 
     assert_call_matches_signature(node, var); 
   }
+
+  node->stack_frame = stack_frame;
 
   return node;
 }
 
 AST_T* visitor_visit_int(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
+  list_push(stack_frame->stack, mkstr("0"));
+  node->stack_index = stack_frame->stack->size;
   return node;
 }
 
 AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
+  list_T* chunks = str_to_hex_chunks(node->string_value);
+  list_push(stack_frame->stack, 0);
+  node->stack_index = (stack_frame->stack->size + chunks->size) - 1;
   return node;
 }
 
@@ -164,7 +179,7 @@ AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node, list_T* list, stack_
   AST_T* new_binop = init_ast(AST_BINOP);
   new_binop->left = visitor_visit(visitor, node->left, list, stack_frame);
   new_binop->op = node->op;
-  new_binop->right = visitor_visit(visitor, node->left, list, stack_frame);
+  new_binop->right = visitor_visit(visitor, node->right, list, stack_frame);
   return new_binop;
 }
 

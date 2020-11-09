@@ -86,7 +86,8 @@ AST_T* parser_parse_id(parser_T* parser)
 
     ast->value = parser_parse_expr(parser);
     
-    ast->value->name = mkstr(ast->name);
+    if (ast->value->type != AST_CALL)
+      ast->value->name = mkstr(ast->name);
   }
 
   return ast;

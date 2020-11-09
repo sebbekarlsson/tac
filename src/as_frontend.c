@@ -8,7 +8,10 @@
 #include <stdio.h>
 
 char* as_f_compound(AST_T* ast, list_T* list) {
-  char* value = calloc(1, sizeof(char)); 
+  int index = ast->stack_frame->stack->size * 4;
+  const char* template = "subl $%d, %%esp\n";
+  char* value = calloc(strlen(template) + 128, sizeof(char));
+  sprintf(value, template, index);
 
   for (unsigned int i = 0; i < ast->children->size; i++)
   {
@@ -105,6 +108,14 @@ char* as_f_assignment(AST_T* ast, list_T* list)
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
     strcat(s, mo); 
   }
+  if (ast->value->type == AST_CALL)
+  {
+    const char* mo_template = "movl %%eax, -%d(%%ebp)\n";
+    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
+    sprintf(mo, mo_template, id);
+    s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
+    strcat(s, mo);
+  }
   else
   { 
     const char* mo_template = "movl %%esp, -%d(%%ebp)\n";
@@ -122,7 +133,7 @@ char* as_f_variable(AST_T* ast, list_T* list) {
 
   const char* template = "# variable (%s)\n"
                          "pushl %d(%%ebp)\n";
-  int id = (ast->stack_index*4);
+  int id = ((ast->stack_index)*4);
   s = realloc(s, (strlen(template) + 8) * sizeof(char));
   sprintf(s, template, ast->name, id);
 
@@ -133,7 +144,7 @@ char* as_f_call(AST_T* ast, list_T* list)
 {
   char* s = calloc(1, sizeof(char));
 
-  unsigned int next_push_counter = 0;
+  unsigned int next_push_counter = ((ast->stack_frame->stack->size - ast->value->children->size) - 1) * 4;
   int* int_list = calloc(0, sizeof(int));
   size_t int_list_size = 0;
 
@@ -147,7 +158,7 @@ char* as_f_call(AST_T* ast, list_T* list)
   {
     AST_T* arg = (AST_T*)ast->value->children->items[i-1];
    
-    if (arg->type == AST_STRING) {
+    if (arg->type == AST_STRING || arg->type == AST_INT) {
       next_push_counter += 4;
 
       char* prefix = calloc(strlen(prefix_template) + 128, sizeof(char));
@@ -163,14 +174,14 @@ char* as_f_call(AST_T* ast, list_T* list)
     s = realloc(s, (strlen(s) + strlen(arg_s) + 1) * sizeof(char));
     strcat(s, arg_s);
 
-    if (arg->type == AST_STRING)
+    if (arg->type == AST_STRING || arg->type == AST_INT)
     { 
-      const char* suffix_template = "movl %%esp, -%d(%%ebp)\n"
+      /*const char* suffix_template = "movl %%esp, -%d(%%ebp)\n"
                                     "# end of %s\n";
       char* suffix = calloc(strlen(suffix_template) + 128, sizeof(char));
       sprintf(suffix, suffix_template, next_push_counter, arg->string_value);
       s = realloc(s, (strlen(s) + strlen(suffix) + 1) * sizeof(char));
-      strcat(s, suffix);
+      strcat(s, suffix);*/
       
       int_list_size += 1;
       int_list = realloc(int_list, int_list_size * sizeof(int));
@@ -194,7 +205,8 @@ char* as_f_call(AST_T* ast, list_T* list)
   int addl_size = i * 4;
 
   const char* template = "call %s\n"
-                         "addl $%d, %%esp\n";
+                         "addl $%d, %%esp\n"
+                         "pushl %%eax\n";
   char* ret_s = calloc(strlen(template) + 128, sizeof(char));
   sprintf(ret_s, template, ast->name, addl_size);
   s = realloc(s, (strlen(s) + strlen(ret_s) + 1) * sizeof(char));
@@ -231,10 +243,13 @@ char* as_f_statement_return(AST_T* ast, list_T* list)
 
 char* as_f_int(AST_T* ast, list_T* list)
 {
-  const char* template = "pushl $%d\n"
-                         "movb (%%esp), %%cl\n";
+  int index = ast->stack_index * 4;
+  const char* template = "# integer\n"
+                         "pushl $%d\n"
+                         "movb (%%esp), %%cl\n"
+                         "movl $%d, -%d(%%ebp)\n";
   char* s = calloc(strlen(template) + 128, sizeof(char));
-  sprintf(s, template, ast->int_value);
+  sprintf(s, template, ast->int_value, ast->int_value, index);
 
   return s;
 }
@@ -244,10 +259,12 @@ char* as_f_string(AST_T* ast, list_T* list)
   list_T* chunks = str_to_hex_chunks(ast->string_value);
   unsigned int nr_bytes = ((chunks->size + 1) * 4);
   unsigned int bytes_counter = nr_bytes - 4;
+  int index = ast->stack_index * 4;
   
-  const char* subl_template = "subl $%d, %%esp\n";
+  const char* subl_template = "# %s\n"
+                              "subl $%d, %%esp\n";
   char* sub = calloc(strlen(subl_template) + 128, sizeof(char));
-  sprintf(sub, subl_template, nr_bytes);
+  sprintf(sub, subl_template, ast->string_value, nr_bytes);
   
   char* strpush = calloc(strlen(sub) + 1, sizeof(char));
   strcat(strpush, sub);
@@ -274,6 +291,10 @@ char* as_f_string(AST_T* ast, list_T* list)
     bytes_counter -= 4;
   }
 
+  const char* final_template = "movl %%esp, -%d(%%ebp)\n";
+  char* final = calloc(strlen(final_template) + 128, sizeof(char));
+  sprintf(final, final_template, index + 4);
+
   /*const char* finalpushstr = "pushl \%esp\n";
 
   strpush = realloc(strpush, (strlen(strpush) + strlen(finalpushstr) + 1) * sizeof(char));
@@ -284,6 +305,9 @@ char* as_f_string(AST_T* ast, list_T* list)
   sprintf(push_size_str, pushsize_template, nr_bytes);
   strpush = realloc(strpush, (strlen(strpush) + strlen(push_size_str) + 1) * sizeof(char));
   strcat(strpush, push_size_str);*/
+
+  strpush = realloc(strpush, (strlen(strpush) + strlen(final) + 1) * sizeof(char));
+  strcat(strpush, final);
 
   return strpush;
 }

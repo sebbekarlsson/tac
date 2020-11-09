@@ -14,10 +14,9 @@ main = (argc: int, argv: Array<string>):int => {
   far:string = "the third string\n";
   
   print(foo);
-  print("yoyo\n");
   print(bar);
+  print("hey\n");
   print(far);
-  printi(256);
 
   return 0;
 };

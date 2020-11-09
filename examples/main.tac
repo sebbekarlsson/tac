@@ -1,7 +1,5 @@
 main = (argc: int, argv:Array<string>):int => {
-  printi(argc);
-  print("\n");
-  print(argv[0]);
-  print("\n");
+  value: string = itos("hello world", 256);
+  print(value);
   return 0;
 };
