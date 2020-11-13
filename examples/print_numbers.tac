@@ -1,5 +1,5 @@
 main = (argc: int, argv: Array<string>):int => {
-  printi(1256434);
-  print("\n");
+  value: string = itos(256, "");
+  print(value);
   return 0;
 }

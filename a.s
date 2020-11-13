@@ -7,107 +7,69 @@ movl %eax, %ebx
 movl $1, %eax
 int $0x80
 
-subl $8, %esp
-.globl hello
-hello:
-pushl %ebp
-movl %esp, %ebp
-subl $32, %esp
-subl $28, %esp
-# variable (x)
-pushl 8(%ebp)
-call print
-addl $0, %esp
-pushl %eax
-# variable (y)
-pushl 12(%ebp)
-call print
-addl $0, %esp
-pushl %eax
-# variable (z)
-pushl 16(%ebp)
-call print
-addl $0, %esp
-pushl %eax
-# integer
-pushl $0
-movb (%esp), %cl
-movl $0, -28(%ebp)
-
-jmp return_statement
-movl %esp, -8(%ebp)
+# compound (0x55f0bfe0b140)
 .globl main
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $56, %esp
-subl $52, %esp
-# the first string
-
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a, 16(%esp)
-movl $0x0676e6972, 12(%esp)
-movl $0x074732074, 8(%esp)
-movl $0x073726966, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -32(%ebp)
-movl %esp, -20(%ebp)
-# the second string
-
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a67, 16(%esp)
-movl $0x06e697274, 12(%esp)
-movl $0x07320646e, 8(%esp)
-movl $0x06f636573, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -40(%ebp)
-movl %esp, -28(%ebp)
-# the third string
-
-subl $24, %esp
-movl $0x0, 20(%esp)
-movl $0x0a, 16(%esp)
-movl $0x0676e6972, 12(%esp)
-movl $0x074732064, 8(%esp)
-movl $0x072696874, 4(%esp)
-movl $0x020656874, 0(%esp)
-movl %esp, -48(%ebp)
-movl %esp, -36(%ebp)
-# variable (foo)
+subl $44, %esp
+subl $48, %esp
+# compound (0x55f0bfe0b470)
+# integer
+pushl $4
+movb (%esp), %cl
+movl $4, -16(%ebp)
+# compound (0x55f0bfe0b600)
+# integer
+pushl $2
+movb (%esp), %cl
+movl $2, -12(%ebp)
+# integer
+pushl $10
+movb (%esp), %cl
+movl $10, -8(%ebp)
+# division
+popl %eax
+popl %ecx
+div %ecx
+pushl %eax
+movb (%esp), %cl
+# addition
+popl %eax
+addl (%esp), %eax
+addl $4, %esp
+pushl %eax
+movb (%esp), %cl
+# assign (x)
+movl $-20, %edi
+movb %cl, (%ebp, %edi, 1)
+# variable (x)
 pushl -20(%ebp)
-call print
-addl $0, %esp
-pushl %eax
-# variable (bar)
-pushl -28(%ebp)
-call print
-addl $0, %esp
-pushl %eax
-subl $4, %esp
-# hey
-
+#  
 subl $8, %esp
 movl $0x0, 4(%esp)
-movl $0x0a796568, 0(%esp)
-movl %esp, -48(%ebp)
-pushl -48(%ebp)
-call print
+movl $0x020, 0(%esp)
+movl %esp, -32(%ebp)
+pushl -20(%ebp)
+pushl -32(%ebp)
+call itos
 addl $0, %esp
 pushl %eax
-# variable (far)
-pushl -36(%ebp)
+movl %eax, -32(%ebp)
+subl $8, %esp
+# variable (y)
+pushl -32(%ebp)
+pushl -32(%ebp)
 call print
 addl $0, %esp
 pushl %eax
 # integer
 pushl $0
 movb (%esp), %cl
-movl $0, -52(%ebp)
+movl $0, -40(%ebp)
 
 jmp return_statement
-movl %esp, -12(%ebp)
+movl %esp, -0(%ebp)
 print:
  pushl %ebp
  movl %esp, %ebp
@@ -128,10 +90,11 @@ itos:
  pushl %ebp
  movl %esp, %ebp
   
- movl 8(%esp), %eax           # number
- movl $12, %edi
+ movl 12(%esp), %eax           # number
+ movl $8, %edi
  leal (%esp, %edi, 1), %ebx   # buffer
  movl $0, %edi                # counter
+ movl $0, %esi
 
  pushl $0x0
  jmp itos_loop 
@@ -145,19 +108,28 @@ itos_loop:
   
   addl $48, %edx
   pushl %edx
-
-  movb (%esp), %cl
-  movb %cl, (%ebx, %edi, 1)
+  
+  inc %edi
 
   test %eax, %eax
-  je itos_end
-
-  dec %edi
+  je itos_buffer_loop
 
   jmp itos_loop
 
+itos_buffer_loop: 
+  popl %ecx
+  movb %cl, (%ebx, %esi, 1)
+
+  test %edi, %edi
+  je itos_end
+
+  inc %esi
+  dec %edi
+
+  jmp itos_buffer_loop
+
 itos_end:
-  leal (%ebx, %edi, 1), %eax
+  movl %ebx, %eax
   movl %ebp, %esp
   popl %ebp
   ret
@@ -187,4 +159,5 @@ strlenend:
   movl %edi, %eax
   movl %ebp, %esp
   popl %ebp
-  ret 
+  ret
+

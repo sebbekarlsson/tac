@@ -17,7 +17,9 @@ main = (argc: int, argv: Array<string>):int => {
   print("yoyo\n");
   print(bar);
   print(far);
-  printi(256);
+  value: string = itos(256, " ");
+  print(value);
+  print("\n");
 
   return 0;
 };

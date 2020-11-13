@@ -32,7 +32,7 @@ int list_indexof_str(list_T* list, char* item)
       continue;
 
     if (strcmp((char*)list->items[i], item) == 0)
-      return (int) i;
+      return (int) -i;
   }
 
   return -1; 

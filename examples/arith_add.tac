@@ -1,3 +1,6 @@
 main = (argc: int, argv: Array<string>):int => {
-  return 10 + 10 + 5 + 6;
+  x: number = 10 + 10 + 5 + 6;
+  y: string = itos(x, " ");
+  print(y);
+  return 0;
 }

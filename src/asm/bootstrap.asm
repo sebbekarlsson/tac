@@ -18,10 +18,11 @@ itos:
  pushl %ebp
  movl %esp, %ebp
   
- movl 8(%esp), %eax           # number
- movl $12, %edi
+ movl 12(%esp), %eax           # number
+ movl $8, %edi
  leal (%esp, %edi, 1), %ebx   # buffer
  movl $0, %edi                # counter
+ movl $0, %esi
 
  pushl $0x0
  jmp itos_loop 
@@ -35,19 +36,28 @@ itos_loop:
   
   addl $48, %edx
   pushl %edx
-
-  movb (%esp), %cl
-  movb %cl, (%ebx, %edi, 1)
+  
+  inc %edi
 
   test %eax, %eax
-  je itos_end
-
-  dec %edi
+  je itos_buffer_loop
 
   jmp itos_loop
 
+itos_buffer_loop: 
+  popl %ecx
+  movb %cl, (%ebx, %esi, 1)
+
+  test %edi, %edi
+  je itos_end
+
+  inc %esi
+  dec %edi
+
+  jmp itos_buffer_loop
+
 itos_end:
-  leal (%ebx, %edi, 1), %eax
+  movl %ebx, %eax
   movl %ebp, %esp
   popl %ebp
   ret
@@ -77,4 +87,5 @@ strlenend:
   movl %edi, %eax
   movl %ebp, %esp
   popl %ebp
-  ret 
+  ret
+
