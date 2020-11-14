@@ -162,7 +162,8 @@ char* as_f_call(AST_T* ast, list_T* list)
   {
     AST_T* arg = (AST_T*)ast->value->children->items[i];
 
-    const char* push_template = "pushl %d(%%ebp)\n";
+    const char* push_template ="# call arg\n" 
+                               "pushl %d(%%ebp)\n";
     char* push = calloc(strlen(push_template) * 128, sizeof(char));
     sprintf(push, push_template, (arg->stack_index + (arg->type == AST_STRING ? 1 : 0)) * 4);
     s = realloc(s, (strlen(s) + strlen(push) + 1) * sizeof(char));
@@ -311,16 +312,19 @@ char* as_f_root(AST_T* ast, list_T* list)
 
 char* as_f_access(AST_T* ast, list_T* list)
 {
-  int offset = 4 + (ast->id * 4);
+  int offset = ((ast->stack_index * -1) * 4) - 4;
+  int array_offset = MAX(4, (ast->int_value + 1) * 4);
   
 
   const char* template = "# access\n"
                          "movl $%d, %%edi\n"
                          "leal (%%ebp, %%edi, 1), %%eax\n"
-                         "pushl %d(%%eax)\n";
+                         "pushl %d(%%eax)\n"
+                         "movl %d(%%eax), %%esp\n"
+                         "movl %%esp, %d(%%ebp)\n";
 
   char* s = calloc(strlen(template) + 128, sizeof(char));
-  sprintf(s, template, offset, MAX(4, (ast->int_value + 1) * 4));
+  sprintf(s, template, offset, array_offset, array_offset, ast->stack_index * 4);
 
   return s;
 }

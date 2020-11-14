@@ -56,11 +56,9 @@ AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node, list_T* list, sta
   AST_T* compound = init_ast(AST_COMPOUND);
   compound->stack_frame = stack_frame;
 
-  list_T* new_list = init_list(sizeof(struct AST_STRUCT*));
-
   for (unsigned int i = 0; i < node->children->size; i++)
   {
-    AST_T* x = visitor_visit(visitor, (AST_T*) node->children->items[i], new_list, stack_frame);
+    AST_T* x = visitor_visit(visitor, (AST_T*) node->children->items[i], list, stack_frame);
     list_push(compound->children, x);
   }
 
@@ -75,12 +73,13 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
 
   if (node->value)
     new_var->value = visitor_visit(visitor, node->value, list, stack_frame);
+  
+  //if (list->size == 0)
+  //  list_push(list, new_var);
 
-  list_push(list, new_var);
-
-  if (new_var->value)
-  if (new_var->value->type == AST_FUNCTION)
-    list_push(visitor->object->children, new_var->value);
+  //if (new_var->value)
+  //if (new_var->value->type == AST_FUNCTION)
+  //  list_push(visitor->object->children, new_var->value);
   
 
   new_var->stack_index = stack_frame->stack->size;
@@ -93,7 +92,24 @@ AST_T* visitor_visit_assignment(visitor_T* visitor, AST_T* node, list_T* list, s
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
   list_push(stack_frame->stack, 0);
-  node->stack_index = list_indexof_str(stack_frame->stack, node->name);
+
+  int index = 0;
+
+  for (unsigned int i = 0; i < list->size; i++)
+  {
+    AST_T* child = (AST_T*) list->items[i];
+    
+    if (!child->name)
+      continue;
+
+    if (strcmp(child->name, node->name) == 0)
+    {
+      index = i + 1;
+      break;
+    }
+  }
+
+  node->stack_index = index ? (index + 1) : list_indexof_str(stack_frame->stack, node->name);
   node->stack_frame = stack_frame;
 
   return node;
@@ -107,11 +123,16 @@ AST_T* visitor_visit_function(visitor_T* visitor, AST_T* node, list_T* list, sta
   func->children = init_list(sizeof(struct AST_STRUCT*));
 
   stack_frame_T* new_stack_frame = init_stack_frame();
+  list_push(new_stack_frame->stack, 0); 
+  list_push(new_stack_frame->stack, 0); 
 
   for (unsigned int i = 0; i < node->children->size; i++)
     list_push(func->children, (AST_T*) visitor_visit(visitor, (AST_T*) node->children->items[i], list, new_stack_frame));
+  
+  for (unsigned int i = 0; i < func->children->size; i++)
+    list_push(list, func->children->items[i]);
 
-  func->value = visitor_visit(visitor, node->value, func->children, new_stack_frame);
+  func->value = visitor_visit(visitor, node->value, list, new_stack_frame);
   func->stack_frame = new_stack_frame;
 
   return func;
@@ -179,7 +200,8 @@ AST_T* visitor_visit_statement_return(visitor_T* visitor, AST_T* node, list_T* l
 
 AST_T* visitor_visit_access(visitor_T* visitor, AST_T* node, list_T* list, stack_frame_T* stack_frame)
 {
-  node->id = list_indexof_str(stack_frame->stack, node->name);
+  list_push(stack_frame->stack, 0);
+  node->stack_index = (list_indexof_str(stack_frame->stack, node->name));
 
   return node;
 }
