@@ -1,5 +1,4 @@
 #include "include/visitor.h"
-#include "include/builtins.h"
 #include "include/compiler_errors.h"
 #include "include/utils.h"
 #include <stdio.h>
@@ -25,8 +24,6 @@ visitor_T* init_visitor()
 {
   visitor_T* visitor = calloc(1, sizeof(struct VISITOR_STRUCT));
   visitor->object = init_ast(AST_COMPOUND);
-
-  builtins_init(visitor->object->children);
 
   return visitor;
 }
@@ -149,12 +146,14 @@ AST_T* visitor_visit_call(visitor_T* visitor, AST_T* node, list_T* list, stack_f
 
   if (var)
   {
-    if (var->fptr)
+    /* Not in use at the moment
+     *
+     * if (var->fptr)
     {
       AST_T* ret = var->fptr(visitor, node, new_args);
       ret->stack_frame = stack_frame;
       return ret;
-    }
+    }*/
 
     assert_call_matches_signature(node, var); 
   }

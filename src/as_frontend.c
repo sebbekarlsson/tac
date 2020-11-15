@@ -1,8 +1,24 @@
 #include "include/as_frontend.h"
 #include "include/utils.h"
 #include "include/token.h"
-#include "include/bootstrap.h"
 #include "include/macros.h"
+
+// asm
+#include "include/asm/bootstrap.h"
+#include "include/asm/root.h"
+#include "include/asm/add.h"
+#include "include/asm/mul.h"
+#include "include/asm/div.h"
+#include "include/asm/sub.h"
+
+#include "include/asm/templates/assign_int.h"
+#include "include/asm/templates/assign_call.h"
+#include "include/asm/templates/assign_binop.h"
+#include "include/asm/templates/assign_default.h"
+#include "include/asm/templates/function_begin.h"
+#include "include/asm/templates/int.h"
+#include "include/asm/templates/access.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -28,13 +44,8 @@ char* as_f_function(AST_T* ast, list_T* list)
   char* name = ast->name;
   int index = ast->stack_frame->stack->size * 4;
 
-  const char* template = ".globl %s\n"
-                           "%s:\n"
-                           "pushl %%ebp\n"
-                           "movl %%esp, %%ebp\n"
-                           "subl $%d, %%esp\n";
-  char* s = calloc((strlen(template) + (strlen(name)*2) + 1), sizeof(char));
-  sprintf(s, template, name, name, index);
+  char* s = calloc((src_asm_templates_function_begin_asm_len + (strlen(name)*2) + 1), sizeof(char));
+  sprintf(s, (char*) src_asm_templates_function_begin_asm, name, index);
 
   if (ast->stack_frame->stack->size)
   {
@@ -83,47 +94,38 @@ char* as_f_assignment(AST_T* ast, list_T* list)
     free(value_as);
   }
 
-  
   if (ast->dtype == DATA_TYPE_INT)
   {
-    const char* mo_template = "# assign (%s)\n"
-                              "movl $-%d, %%edi\n"
-                              "movb %%cl, (%%ebp, %%edi, 1)\n";
-    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-    sprintf(mo, mo_template, ast->name, id);
+    char* mo = calloc(src_asm_templates_assign_int_asm_len + 128, sizeof(char));
+    sprintf(mo, (char*)src_asm_templates_assign_int_asm, ast->name, id);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
-    strcat(s, mo); 
+    strcat(s, mo);
+    free(mo); 
   }
   else
   if (ast->value->type == AST_CALL)
   {
-    const char* mo_template = "movl %%eax, -%d(%%ebp)\n";
-    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-    sprintf(mo, mo_template, id);
+    char* mo = calloc(src_asm_templates_assign_call_asm_len + 128, sizeof(char));
+    sprintf(mo, (char*) src_asm_templates_assign_call_asm, id, ast->value->value->children->size * 4);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
     strcat(s, mo);
-
-    const char* sub_template = "subl $%d, %%esp\n";
-    char* su = calloc(strlen(sub_template) + 128, sizeof(char));
-    sprintf(su, sub_template, ast->value->value->children->size * 4);
-    s = realloc(s, (strlen(s) + strlen(su) + 1) * sizeof(char));
-    strcat(s, su);
+    free(mo);
   }
   else if (ast->value->type == AST_BINOP)
   { 
-    const char* mo_template = "movl %%eax, -%d(%%ebp)\n";
-    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-    sprintf(mo, mo_template, id);
+    char* mo = calloc(src_asm_templates_assign_binop_asm_len + 128, sizeof(char));
+    sprintf(mo, (char*) src_asm_templates_assign_binop_asm, id);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
     strcat(s, mo);
+    free(mo);
   }
   else
   { 
-    const char* mo_template = "movl %%esp, -%d(%%ebp)\n";
-    char* mo = calloc(strlen(mo_template) + 128, sizeof(char));
-    sprintf(mo, mo_template, id);
+    char* mo = calloc(src_asm_templates_assign_default_asm_len + 128, sizeof(char));
+    sprintf(mo, (char*) src_asm_templates_assign_default_asm, id);
     s = realloc(s, (strlen(s) + strlen(mo) + 1) * sizeof(char));
     strcat(s, mo);
+    free(mo);
   }
 
   return s;
@@ -219,12 +221,8 @@ char* as_f_statement_return(AST_T* ast, list_T* list)
 char* as_f_int(AST_T* ast, list_T* list)
 {
   int index = ast->stack_index * 4;
-  const char* template = "# integer\n"
-                         "pushl $%d\n"
-                         "movb (%%esp), %%cl\n"
-                         "movl $%d, %d(%%ebp)\n";
-  char* s = calloc(strlen(template) + 128, sizeof(char));
-  sprintf(s, template, ast->int_value, ast->int_value, index);
+  char* s = calloc(src_asm_templates_int_asm_len + 128, sizeof(char));
+  sprintf(s, (char*) src_asm_templates_int_asm, ast->int_value, ast->int_value, index);
 
   return s;
 }
@@ -270,17 +268,6 @@ char* as_f_string(AST_T* ast, list_T* list)
   char* final = calloc(strlen(final_template) + 128, sizeof(char));
   sprintf(final, final_template, index + 4);
 
-  /*const char* finalpushstr = "pushl \%esp\n";
-
-  strpush = realloc(strpush, (strlen(strpush) + strlen(finalpushstr) + 1) * sizeof(char));
-  strcat(strpush, finalpushstr);*/
-
-  /*const char* pushsize_template = "pushl $%d\n";
-  char* push_size_str = calloc(strlen(pushsize_template) + 128, sizeof(char));
-  sprintf(push_size_str, pushsize_template, nr_bytes);
-  strpush = realloc(strpush, (strlen(strpush) + strlen(push_size_str) + 1) * sizeof(char));
-  strcat(strpush, push_size_str);*/
-
   strpush = realloc(strpush, (strlen(strpush) + strlen(final) + 1) * sizeof(char));
   strcat(strpush, final);
 
@@ -289,15 +276,8 @@ char* as_f_string(AST_T* ast, list_T* list)
 
 char* as_f_root(AST_T* ast, list_T* list)
 {
-  const char* section_text = ".section .text\n"
-                             ".globl _start\n"
-                             "_start:\n"
-                             "movl \%esp, \%ebp\n"
-                             "call main\n"
-                             "movl \%eax, \%ebx\n"
-                             "movl $1, \%eax\n"
-                             "int $0x80\n\n";
-  char* value = (char*) calloc((strlen(section_text) + 128), sizeof(char));
+  const char* section_text = (char*) src_asm_root_asm;
+  char* value = (char*) calloc((src_asm_root_asm_len + 128), sizeof(char));
   strcpy(value, section_text);
 
   char* next_value = as_f(ast, list);
@@ -315,16 +295,8 @@ char* as_f_access(AST_T* ast, list_T* list)
   int offset = ((ast->stack_index * -1) * 4) - 4;
   int array_offset = MAX(4, (ast->int_value + 1) * 4);
   
-
-  const char* template = "# access\n"
-                         "movl $%d, %%edi\n"
-                         "leal (%%ebp, %%edi, 1), %%eax\n"
-                         "pushl %d(%%eax)\n"
-                         "movl %d(%%eax), %%esp\n"
-                         "movl %%esp, %d(%%ebp)\n";
-
-  char* s = calloc(strlen(template) + 128, sizeof(char));
-  sprintf(s, template, offset, array_offset, array_offset, ast->stack_index * 4);
+  char* s = calloc(src_asm_templates_access_asm_len + 128, sizeof(char));
+  sprintf(s, (char*)src_asm_templates_access_asm, offset, array_offset, array_offset, ast->stack_index * 4);
 
   return s;
 }
@@ -339,54 +311,22 @@ char* as_f_binop(AST_T* ast, list_T* list)
   strcat(s, right_f_str);
   strcat(s, left_f_str);
 
-
   char* value = 0;
 
-  if (ast->op == TOKEN_PLUS)
+  switch (ast->op)
   {
-    value =  "# addition\n"
-             "popl %eax\n"
-             "addl (%esp), %eax\n"
-             "addl $4, %esp\n"
-             "pushl %eax\n"
-             "movb (%esp), %cl\n"; 
-  }
-  else
-  if (ast->op == TOKEN_MINUS)
-  {
-    value = "# subtraction\n"
-            "popl %eax\n"
-            "subl (%esp), %eax\n"
-            "addl $4, %esp\n"
-            "pushl %eax\n"
-            "movb (%esp), %cl\n";
-  }
-  else
-  if (ast->op == TOKEN_MUL)
-  {
-    value =  "# multiplication\n"
-             "popl %eax\n"
-             "imull (%esp), %eax\n"
-             "addl $4, %esp\n"
-             "pushl %eax\n"
-             "movb (%esp), %cl\n";
-  }
-  else
-  if (ast->op == TOKEN_DIV)
-  {
-    value =  "# division\n"
-             "popl %eax\n"
-             "popl %ecx\n"
-             "div %ecx\n"
-             "pushl %eax\n"
-             "movb (%esp), %cl\n";
+    case TOKEN_PLUS: value = (char*) src_asm_add_asm; break;
+    case TOKEN_MINUS: value = (char*) src_asm_sub_asm; break;
+    case TOKEN_MUL: value = (char*) src_asm_mul_asm; break;
+    case TOKEN_DIV: value = (char*) src_asm_div_asm; break;
+    default: { printf("[As Frontend]: No frontend binop `%d`\n", ast->op); exit(1); } break;
   }
 
-  if (value)
-  {
-    s = realloc(s, (strlen(s) + strlen(value) + 1) * sizeof(char));
-    strcat(s, value);
-  }
+  s = realloc(s, (strlen(s) + strlen(value) + 1) * sizeof(char));
+  strcat(s, value);
+
+  free(left_f_str);
+  free(right_f_str);
 
   return s;
 }

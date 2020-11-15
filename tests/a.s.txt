@@ -6,72 +6,91 @@ call main
 movl %eax, %ebx
 movl $1, %eax
 int $0x80
-
-# compound (0x5558b707eb70)
+# compound (0x561935e0eda0)
+# start of "main"
 .globl main
 main:
 pushl %ebp
 movl %esp, %ebp
-subl $52, %esp
 subl $56, %esp
-# compound (0x5558b707ee90)
+
+subl $60, %esp
+# compound (0x561935e0f0c0)
+# integer
+pushl $1
+movb (%esp), %cl
+movl $1, -28(%ebp)
+# compound (0x561935e0f230)
 # integer
 pushl $5
 movb (%esp), %cl
 movl $5, -24(%ebp)
 # integer
-pushl $10
+pushl $5
 movb (%esp), %cl
-movl $10, -20(%ebp)
-# addition
+movl $5, -20(%ebp)
+# multiplication
 popl %eax
-addl (%esp), %eax
+imull (%esp), %eax
 addl $4, %esp
 pushl %eax
 movb (%esp), %cl
+
 # integer
-pushl $10
+pushl $5
 movb (%esp), %cl
-movl $10, -16(%ebp)
+movl $5, -16(%ebp)
 # addition
 popl %eax
 addl (%esp), %eax
 addl $4, %esp
 pushl %eax
 movb (%esp), %cl
-# assign (x)
-movl $-28, %edi
-movb %cl, (%ebp, %edi, 1)
-# variable (x)
-pushl -28(%ebp)
+
+# subtraction
+popl %eax
+subl (%esp), %eax
+addl $4, %esp
+pushl %eax
+movb (%esp), %cl
+
+# assign (res)
+popl  -32(%ebp)
+
+ # variable (res)
+pushl -32(%ebp)
 #  
 subl $8, %esp
 movl $0x0, 4(%esp)
 movl $0x020, 0(%esp)
-movl %esp, -40(%ebp)
+movl %esp, -44(%ebp)
 # call arg
-pushl -28(%ebp)
+pushl -32(%ebp)
 # call arg
-pushl -40(%ebp)
+pushl -44(%ebp)
 call itos
 addl $0, %esp
 pushl %eax
-movl %eax, -40(%ebp)
+# assign call
+movl %eax, -44(%ebp)
 subl $8, %esp
+
 # variable (value)
-pushl -40(%ebp)
+pushl -44(%ebp)
 # call arg
-pushl -40(%ebp)
+pushl -44(%ebp)
 call print
 addl $0, %esp
 pushl %eax
 # integer
 pushl $0
 movb (%esp), %cl
-movl $0, -48(%ebp)
+movl $0, -52(%ebp)
 
 jmp return_statement
+# assign default
 movl %esp, -0(%ebp)
+
 print:
  pushl %ebp
  movl %esp, %ebp

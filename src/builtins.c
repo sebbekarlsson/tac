@@ -1,13 +1,11 @@
+/**
+ * Not in use at the moment
+ *
 #include "include/builtins.h"
 #include "include/utils.h"
 #include "include/as_frontend.h"
 #include <string.h>
 #include <stdio.h>
-
-AST_T* fptr_print(visitor_T* visitor, AST_T* node, list_T* list)
-{
-  return node;
-}
 
 void builtins_register_fptr(list_T* list, const char* name, AST_T* (*fptr)(visitor_T* visitor, AST_T* node, list_T* list))
 {
@@ -20,5 +18,4 @@ void builtins_register_fptr(list_T* list, const char* name, AST_T* (*fptr)(visit
 
 void builtins_init(list_T* list)
 {
-  builtins_register_fptr(list, "print", fptr_print);
-}
+}*/
