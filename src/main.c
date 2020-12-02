@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
 {
   if (argc < 2)
   {
-    printf("Please specify input file.\n");
+    fprintf("\033[1;31mPlease specify input file.\033[0m\n");
     return 1;
   }
 
