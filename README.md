@@ -76,3 +76,7 @@ make
 - [ ] Get rid of "GNU Assembler" dependency
 - [ ] Get rid of "GNU Linker" dependency
 - [ ] Get rid of "xxdi" dependency
+## if statements
+```
+IF 2 == 2 THEN blah blah
+```
